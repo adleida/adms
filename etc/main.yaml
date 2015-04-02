@@ -1,0 +1,83 @@
+cli:
+  help:
+    overview: use this command could decide to deploy your webserver on variety.
+    bind: specify your server host bind
+    port: specify your server port open
+    version: display version of adms
+    debug: switch debug modern to scratch all log output
+    loglevel: adjust more then default level of ouput
+  server:
+    prog: adms
+    bind: 0.0.0.0
+    port: 8008
+    loglevel:
+      default: warn
+      choices:
+        - info
+        - warn
+        - error
+  log:
+    format: '%(asctime)s %(levelname)s %(message)s'
+    datefmt: '%m/%d/%Y %I:%M:%S %p'
+
+app:
+  param:
+    id: id
+    name: name
+    burl: burl
+  url:
+    dsp: /v1/dsp
+    adm: /v1/adm
+
+model:
+  dsp:
+    id: id
+    name: name
+    burl: burl
+    timestamp: timestamp
+
+http:
+  res:
+    code:
+      400: 400
+      408: 408
+      417: 417
+      500: 500
+    # TODO here I'll improve some descripion in the future
+    desc:
+      dsp201: sucessfully create your dsp information to adexchange
+      408: timeout
+      duplicate417: this record already exists
+      insert500: insert to mongo error
+
+path:
+  schema:
+    dsp: ../res/adv-add-schema.json
+
+db:
+  mongo:
+    client:
+      host: 192.168.1.119
+      port: 20000
+      db: assist
+      dsp_tab: dsp
+      media_tab: media
+      dbObj: null
+      dsp_tabObj: null
+      media_tabObj: null
+    fields:
+      saber: ex
+  gridfs:
+    client:
+      host: 192.168.1.119
+      port: 20000
+      db: assist
+      dbObj: null
+    fields:
+      archer: ea
+  redis:
+    client:
+      host: 192.168.1.119
+      port: 6379
+      db: 2
+      dbObj: null

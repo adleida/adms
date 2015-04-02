@@ -1,0 +1,2 @@
+include adms/res/*.json
+include adms/res/*.yaml

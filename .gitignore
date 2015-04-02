@@ -1,0 +1,6 @@
+*~
+*.swp
+*.pyc
+/*.egg-info/
+adms/demo
+/.tox
