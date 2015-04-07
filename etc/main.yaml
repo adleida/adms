@@ -26,17 +26,43 @@ app:
     name: name
     burl: burl
   url:
-    dsp: /v1/dsp
-    adm: /v1/adm
+    dsp: /v1/dsp/
+    # [ NOTICE ]
+    # if you change <id> in the future
+    # you also need to fix parameters in AdvHandlerOne [ get ] method
+    one_dsp: /v1/dsp/<id>
+    adm: /v1/adm/
+    one_adm: /v1/adm/<id>
+    # [ NOTICE ]
+    # if you change host, you must modify below url
+    media: http://192.168.1.232:8008/v1/media/
+    upload: /v1/media/upload
 
 model:
   dsp:
     id: id
+    # now I just use below two fields, if someday changed
+    # in the code you should add dict[[new key]] = dict.pop([old key])
     name: name
     burl: burl
     timestamp: timestamp
+  adm:
+    id: id
+    media_id: media_id
+    timestamp: timestamp
+  media:
+    ref: ref
+    approved: approved
+    updated: updated
 
 http:
+  req:
+    allow_ext:
+      - jpg
+      - jpeg
+      - png
+      - gif
+    size: 16
   res:
     code:
       400: 400
@@ -45,14 +71,43 @@ http:
       500: 500
     # TODO here I'll improve some descripion in the future
     desc:
-      dsp201: sucessfully create your dsp information to adexchange
-      408: timeout
-      duplicate417: this record already exists
-      insert500: insert to mongo error
+      del200: successfully delete your information
+      delno200: you update nothing actually, confirm your providing
+      put200: successfully update your information
+      putno200: you update nothing actually
+      # below descripion just for adleida members in the future
+      getall200: you find nothing actually, maybe something error of mongo?
+      getone200: you find nothing actually, confirm your providing
+
+      dsp201: successfully create your dsp information to adexchange
+      adm201: successfully create your adm information to adexchange
+
+      del400: please show me your id of field before delete
+      put400: please show me your dsp id before update
+      update400: can you give me some update info?
+      getone400: please show me your dsp id before find one
+      part400: incorrect upload, please check up your format of form
+      postfix400: please upload correct postfix of file
+
+      408: process request timeout
+
+      dup417: this record already exists
+      selected417: no selected file, please chose correct one to continue
+
+      insert500: insert failed because error occured with database
+      del500: delete failed because error occured with database
+      update500: update failed because error occured with database
+      getall500: find all failed because error occured with database
+      getone500: find one failed because error occured with database
+      upload500: upload failed because error occured with database
+      sync500: because of failed updating, we stop procedure
 
 path:
   schema:
-    dsp: ../res/adv-add-schema.json
+    dsp: ../res/dsp-add-schema.json
+    adm: ../res/adm-add-schema.json
+  templates:
+    upload: upload.html
 
 db:
   mongo:
@@ -61,9 +116,11 @@ db:
       port: 20000
       db: assist
       dsp_tab: dsp
-      media_tab: media
+      adm_tab: adm
+      media_tab: fs.files
       dbObj: null
       dsp_tabObj: null
+      adm_tabObj: null
       media_tabObj: null
     fields:
       saber: ex

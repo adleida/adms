@@ -1,26 +1,25 @@
 # coding: utf-8
 
-from flask import Flask
+from flask import Flask, request
 from flask.ext.restful import reqparse, Api
 
 from . import __version__
 from .config import Config
-from .handler.adv import AdvHandler
-from .handler.cre import CreHandler
+from .handler.adv import AdvHandler, AdvHandlerOne
+from .handler.cre import CreHandler, CreHandlerOne
 
-# TODO delete then
 from .handler.test import Test
-from .handler.adv import AdvTmp1
-from .handler.adv import AdvTmp2
-from .handler.cre import CreTmp
 
-
-app = Flask(__name__)
-api = Api(app, catch_all_404s=True)
 
 __app = Config.cfg['app']
 __param = __app['param']
 __url = __app['url']
+__req = Config.cfg['http']['req']
+
+
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = __req['size'] * 1024 * 1024
+api = Api(app, catch_all_404s=True)
 
 # TODO point location in the future
 parser = reqparse.RequestParser()
@@ -35,12 +34,16 @@ api.add_resource(Test, '/')
 # for advertiser's methods >>> [ /v1/dsp ]
 AdvHandler = AdvHandler.set_parser(parser)
 api.add_resource(AdvHandler, __url['dsp'])
+AdvHandlerOne = AdvHandlerOne.set_parser(parser)
+api.add_resource(AdvHandlerOne, __url['one_dsp'])
 
-# for media's methods >>> [ /v1/adm ]
+# for adm's methods >>> [ /v1/adm ]
 CreHandler = CreHandler.set_parser(parser)
 api.add_resource(CreHandler, __url['adm'])
+CreHandlerOne = CreHandlerOne.set_parser(parser)
+api.add_resource(CreHandlerOne, __url['one_adm'])
 
-# TODO delete then, tmporary set here
-# api.add_resource(AdvTmp1, '/v1/dsp/')
-# api.add_resource(AdvTmp2, '/v1/dsp/<string>')
-# api.add_resource(CreTmp, '/v1/adm/<id>')
+# for media's methods >>> [ /v1/media/upload ]
+@app.route(__url['upload'], methods=['GET', 'POST'])
+def upload():
+    return CreHandler.upload(request)

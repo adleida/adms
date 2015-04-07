@@ -4,7 +4,6 @@ import time
 import logging
 from flask import request
 from flask.ext.restful import Resource, abort
-from werkzeug import secure_filename
 from werkzeug.exceptions import HTTPException
 
 # here I get http response error code from global object cfg of Config class
@@ -27,6 +26,7 @@ class AdvHandler(Resource):
         cls.parser = parser
         return cls
 
+    # TODO I'll implements multiply insert in the future
     def post(self):
         ''' create advertisers' info '''
 
@@ -34,26 +34,24 @@ class AdvHandler(Resource):
         try:
             json_req = request.get_json()
         except HTTPException as ex:
-            # TODO I'll put below bad coding to etc in the future
-            abort(self.__res['code'][500], message=ex)
+            abort(self.__res['code'][500], message=ex.message)
 
         # check format by using [ jsonschema ] here
         schemapath = Config.cfg['path']['schema']['dsp']
         ok, ex = udefault.check_schema(json_req, schemapath)
         if not ok:
-            # TODO put below to etc in the future
             abort(self.__res['code'][400], message=ex.message)
 
         # insert data here in mongo
         # and first I specify [ id ] >>> [ _id ] in order to ensure primary key
         json_req['_id'] = json_req.pop(self.__dsp['id'])
         json_req.setdefault(self.__dsp['timestamp'], time.time())
-        _id = DaoMongo.insert_data(self.__dsp_tabObj, json_req)
-        if _id:
-            if not _id is True:
+        res = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
+        if res:
+            if not res is True:
                 return self.__res['desc']['dsp201']
             else:
-                abort(self.__res['code'][417], message=self.__res['desc']['duplicate417'])
+                abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
         else:
             # TODO when error occured that log is too long
             abort(self.__res['code'][500], message=self.__res['desc']['insert500'])
@@ -61,71 +59,92 @@ class AdvHandler(Resource):
     def delete(self):
         ''' remove advertisers's info '''
 
-        args = parser.parse_args()
-        id = args[__param['id']]
-
-        # TODO connect to mongo and delete this record
-        pass
+        args = self.parser.parse_args()
+        id_val = args[self.__param['id']]
+        if not id_val:
+            abort(self.__res['code'][400], message=self.__res['desc']['del400'])
+        res = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
+        if res:
+            if res is 2:
+                abort(self.__res['code'][500], message=self.__res['desc']['del500'])
+            else:
+                return self.__res['desc']['del200']
+        else:
+            return self.__res['desc']['delno200']
 
     def put(self):
         ''' modify advertisers' info '''
 
-        return 'put here'
+        args = self.parser.parse_args()
+        id_val = args[self.__param['id']]
+        name_val = args[self.__param['name']]
+        burl_val = args[self.__param['burl']]
+        if not id_val:
+            abort(self.__res['code'][400], message=self.__res['desc']['put400'])
+        if name_val and burl_val:
+            update_info = {
+                self.__dsp['name']: name_val,
+                self.__dsp['burl']: burl_val }
+        elif name_val:
+            update_info = {
+                self.__dsp['name']: name_val }
+        elif burl_val:
+            update_info = {
+                self.__dsp['burl']: burl_val }
+        else:
+            abort(self.__res['code'][400], message=self.__res['desc']['update400'])
+
+        res = DaoMongo.update_one(self.__dsp_tabObj, '_id', id_val, update_info)
+        if res:
+            if res is 2:
+                abort(self.__res['code'][500], message=self.__res['desc']['update500'])
+            else:
+                return self.__res['desc']['put200']
+        else:
+            return self.__res['desc']['putno200']
 
     def get(self):
-        ''' query from advertisers' info '''
+        ''' query all from advertisers' info '''
 
-        return 'get here'
-
-
-# TODO delete then
-class AdvTmp1(Resource):
-
-    def get(self):
-        return [
-                   {
-                       "burl": "http://dsp.ipinyou.com:8089/v1/bid/", 
-                       "id": "dsp-0", 
-                       "name": "mock dsp0"
-                   }, 
-                   {
-                       "burl": "http://dsp1.adleida.com:6001/bids", 
-                       "id": "dsp-1", 
-                       "name": "mock dsp1"
-                   }, 
-                   {
-                       "burl": "http://dsp2.adleida.com:6002/bids", 
-                       "id": "dsp-2", 
-                       "name": "mock dsp2"
-                   }, 
-                   {
-                       "burl": "http://dsp3.adleida.com:6003/bids", 
-                       "id": "dsp-3", 
-                       "name": "mock dsp3"
-                   }, 
-                   {
-                       "burl": "http://dsp4.adleida.com:6001/bids", 
-                       "id": "dsp-4", 
-                       "name": "mock dsp4"
-                   }, 
-                   {
-                       "burl": "http://dsp5.adleida.com:6002/bids", 
-                       "id": "dsp-5", 
-                       "name": "mock dsp5"
-                   }, 
-                   {
-                       "burl": "http://dsp6.adleida.com:6003/bids", 
-                       "id": "dsp-6", 
-                       "name": "mock dsp6"
-                   }
-               ]
+        res = DaoMongo.find_all(self.__dsp_tabObj)
+        if res:
+            if res is 2:
+                abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
+            else:
+                real_res = []
+                for per in res:
+                    per.pop(self.__dsp['timestamp'])
+                    per[self.__dsp['id']] = per.pop('_id')
+                    real_res.append(per)
+                return real_res
+        else:
+            return self.__res['desc']['getall200']
 
 
-class AdvTmp2(Resource):
+class AdvHandlerOne(Resource):
 
-    def get(self, string):
-        return {
-                   "burl": "http://dsp.ipinyou.com:8089/v1/bid/", 
-                   "id": "dsp-0", 
-                   "name": "mock dsp0"
-               }
+    __cfg = Config.cfg
+    __res = __cfg['http']['res']
+    __dsp_tabObj = __cfg['db']['mongo']['client']['dsp_tabObj']
+    __dsp = __cfg['model']['dsp']
+
+    @classmethod
+    def set_parser(cls, parser):
+        cls.parser = parser
+        return cls
+
+    def get(self, id):
+        ''' query one dsp info from advertisers' records '''
+
+        if not id:
+            abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
+        res = DaoMongo.find_one(self.__dsp_tabObj, '_id', id)
+        if res:
+            if res is 2:
+                abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
+            else:
+                res.pop(self.__dsp['timestamp'])
+                res[self.__dsp['id']] = res.pop('_id')
+                return res
+        else:
+            return self.__res['desc']['getone200']

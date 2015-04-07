@@ -10,8 +10,8 @@ class Mdsp(object):
     def set_dsp(self, dsp):
         '''
         dsp:
-            id: id
-            name: name                                                                             
+            _id: id
+            name: name 
             burl: burl
             timestamp: timestamp
         '''

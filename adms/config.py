@@ -6,6 +6,7 @@ from os import path
 from .models.mdsp import Mdsp
 from .utils.udefault import load_yaml
 from .dao.mongo.daomongo import DaoMongo
+from .dao.mongo.daogridfs import DaoGridFS
 
 
 class Config(object):
@@ -26,15 +27,23 @@ class Config(object):
         def init_db(info):
             ''' initialize database after getting all config '''
 
-            client = info['db']['mongo']['client']
-            mongo_db = DaoMongo.get_db(client)
-            dsp_tabObj = DaoMongo.get_tab(mongo_db, client['dsp_tab'])
-            media_tabObj = DaoMongo.get_tab(mongo_db, client['media_tab'])
+            mongoinfo = info['db']['mongo']['client']
+            gridfsinfo = info['db']['gridfs']['client']
 
-            client['dbObj'] = mongo_db
-            client['dsp_tabObj'] = dsp_tabObj
-            client['media_tabObj'] = media_tabObj
-            info['db']['mongo']['client'] = client
+            mongo_db = DaoMongo.get_db(mongoinfo)
+            dsp_tabObj = DaoMongo.get_tab(mongo_db, mongoinfo['dsp_tab'])
+            adm_tabObj = DaoMongo.get_tab(mongo_db, mongoinfo['adm_tab'])
+            media_tabObj = DaoMongo.get_tab(mongo_db, mongoinfo['media_tab'])
+            gridfs_db = DaoGridFS.get_db(gridfsinfo)
+
+            mongoinfo['dbObj'] = mongo_db
+            mongoinfo['dsp_tabObj'] = dsp_tabObj
+            mongoinfo['adm_tabObj'] = adm_tabObj
+            mongoinfo['media_tabObj'] = media_tabObj
+            gridfsinfo['dbObj'] = gridfs_db
+
+            info['db']['mongo']['client'] = mongoinfo
+            info['db']['gridfs']['client'] = gridfsinfo
 
             return info
 

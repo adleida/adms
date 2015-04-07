@@ -3,6 +3,7 @@
 import io
 import logging
 import pkgutil
+import hashlib
 import yaml
 import json
 import jsonschema
@@ -62,3 +63,9 @@ def check_schema(obj, schemapath):
         return True, None
     except Exception as ex:
         return False, ex
+
+
+def get_sha1(obj):
+    ''' transfer string or buffer to sha1 whose type is string '''
+
+    return hashlib.sha1(obj).hexdigest()

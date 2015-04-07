@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "integer"
+    },
+    "did": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "img": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "app_url": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "did",
+    "data"
+  ]
+}
