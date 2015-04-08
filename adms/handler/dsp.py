@@ -12,7 +12,7 @@ from ..utils import udefault
 from ..dao.mongo.daomongo import DaoMongo
 
 
-class AdvHandler(Resource):
+class DspHandler(Resource):
 
     # here build some shortcut variety to provide convenience
     __cfg = Config.cfg
@@ -121,7 +121,7 @@ class AdvHandler(Resource):
             return self.__res['desc']['getall200']
 
 
-class AdvHandlerOne(Resource):
+class DspHandlerOne(Resource):
 
     __cfg = Config.cfg
     __res = __cfg['http']['res']

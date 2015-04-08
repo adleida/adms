@@ -85,7 +85,7 @@ class CreHandler(Resource):
             else:
                 media_id = find_res[self.__adm['media_id']]
         else:
-            abort(self.__res['code'][500], message=self.__res['desc']['getone500'])
+            return self.__res['desc']['delno200']
 
         res = DaoMongo.remove_one(self.__adm_tabObj, '_id', id_val)
         if res:
@@ -143,23 +143,38 @@ class CreHandler(Resource):
                 _id = udefault.get_sha1(binary)
 
                 # define part of model here before saving to gridfs
-                _dict = {
+                media = {
                     '_id': _id,
                     'filename': _id,
                     cls.__media['ref']: 0,
                     cls.__media['approved']: False
                 }
 
-                res = DaoGridFS.put(cls.__fsObj, binary, _dict)
+                res = DaoGridFS.put(cls.__fsObj, binary, media)
                 if res:
                     # below url return media location to users
                     # i.e. [ http://192.168.1.232:8008/v1/media/[id] ]
-                    return '{}{}'.format(cls.__url['media'], _id)
+                    return '{}{}'.format(cls.__url['prompt'], _id)
                 else:
                     abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
             else:
                 abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
         return render_template(cls.__cfg['path']['templates']['upload'])
+
+    @classmethod
+    def display(cls, id):
+        ''' return get image via id '''
+
+        # if you change _id from gridfs one day, please fix [ len(id) ] here
+        if (not id) or not len(id) == 40:
+            abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
+        binary = DaoGridFS.get(cls.__fsObj, id)
+        if binary is 2:
+            abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
+        else:
+            response = make_response(binary)
+            response.headers['Content-Type'] = 'image'
+            return response
 
 
 class CreHandlerOne(Resource):

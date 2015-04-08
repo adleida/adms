@@ -38,13 +38,14 @@ class DaoGridFS(object):
         return _id
 
     @classmethod
-    def get(cls, fsObj, objId):
+    def get(cls, fsObj, _id):
         ''' get file by objId from fsObj '''
 
         try:
-            file = fsObj.get(objId).read()
+            binary = fsObj.get(_id).read()
         except Exception as ex:
-            logging.error('[GET_FROM_GRIDFS] {} >>> {} | {}'.format(ex, fsObj, objId))
+            logging.error('[GET_FROM_GRIDFS] {} >>> {} | {}'.format(ex, fsObj, _id))
             # TODO fix in the future
             raise
-        return True
+            return 2
+        return binary
