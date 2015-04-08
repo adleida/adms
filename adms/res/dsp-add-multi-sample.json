@@ -1,36 +1,29 @@
 [
     {
-        "id": "dsp-0", 
         "name": "mock dsp0", 
         "burl": "http://dsp.ipinyou.com:8089/v1/bid/"
     }, 
     {
-        "id": "dsp-1", 
         "name": "mock dsp1", 
         "burl": "http://dsp1.adleida.com:6001/bids"
     }, 
     {
-        "id": "dsp-2", 
         "name": "mock dsp2", 
         "burl": "http://dsp2.adleida.com:6002/bids"
     }, 
     {
-        "id": "dsp-3", 
         "name": "mock dsp3", 
         "burl": "http://dsp3.adleida.com:6003/bids"
     }, 
     {
-        "id": "dsp-4", 
         "name": "mock dsp4", 
         "burl": "http://dsp4.adleida.com:6001/bids"
     }, 
     {
-        "id": "dsp-5", 
         "name": "mock dsp5", 
         "burl": "http://dsp5.adleida.com:6002/bids"
     }, 
     {
-        "id": "dsp-6", 
         "name": "mock dsp6", 
         "burl": "http://dsp6.adleida.com:6003/bids"
     }

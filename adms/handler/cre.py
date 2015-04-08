@@ -25,6 +25,7 @@ class CreHandler(Resource):
     __fsObj = __cfg['db']['gridfs']['client']['dbObj']
     __adm = __cfg['model']['adm']
     __media = __cfg['model']['media']
+    __fields = __res['fields']
 
     @classmethod
     def set_parser(cls, parser):
@@ -38,7 +39,7 @@ class CreHandler(Resource):
         try:
             json_req = request.get_json()
         except HTTPException as ex:
-            abort(self.__res['code'][500], message=ex.message)
+            abort(self.__res['code'][500], message=ex)
 
         schemapath = Config.cfg['path']['schema']['adm']
         ok, ex = udefault.check_schema(json_req, schemapath)
@@ -46,7 +47,6 @@ class CreHandler(Resource):
             abort(self.__res['code'][400], message=ex.message)
 
         # here I gather all fields which I need
-        json_req['_id'] = json_req.pop(self.__adm['id'])
         json_req.setdefault(self.__adm['timestamp'], time.time())
         media_id = json_req['data']['img'].rsplit('/', 1)[1]
         json_req.setdefault(self.__adm['media_id'], media_id)
@@ -63,7 +63,10 @@ class CreHandler(Resource):
                         update_info, inc_info)
                 if not affirm is True:
                     abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
-                return self.__res['desc']['adm201']
+                return {
+                           self.__fields['id']: str(res),
+                           self.__fields['message']: self.__res['desc']['adm201']
+                       }
             else:
                 abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
         else:
@@ -74,10 +77,10 @@ class CreHandler(Resource):
         ''' remove advertisers' media info '''
 
         args = self.parser.parse_args()
-        id_val = args[self.__param['id']]
-        if not id_val:
+        try:
+            id_val = udefault.get_objId(args[self.__param['id']])
+        except:
             abort(self.__res['code'][400], message=self.__res['desc']['del400'])
-
         find_res = DaoMongo.find_one(self.__adm_tabObj, '_id', id_val)
         if find_res:
             if find_res is 2:
@@ -114,7 +117,7 @@ class CreHandler(Resource):
                 for per in res:
                     per.pop(self.__adm['media_id'])
                     per.pop(self.__adm['timestamp'])
-                    per[self.__adm['id']] = per.pop('_id')
+                    per[self.__adm['id']] = str(per.pop('_id'))
                     real_res.append(per)
                 return real_res
         else:
@@ -169,8 +172,11 @@ class CreHandler(Resource):
         if (not id) or (not len(id) == 40):
             abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
         res = DaoMongo.find_one(cls.__media_tabObj, '_id', id)
+
+        # if you debug advanced, commit below two lines
         if res[cls.__media['approved']] is False:
             return cls.__res['desc']['getnoapproved200']
+
         binary = DaoGridFS.get(cls.__fsObj, id)
         if binary is 2:
             abort(cls.__res['code']['500'], message=cls.__res['desc']['getone500'])
@@ -194,7 +200,9 @@ class CreHandlerOne(Resource):
     def get(self, id):
         ''' query one adm info from adm's records '''
 
-        if not id:
+        try:
+            id = udefault.get_objId(id)
+        except:
             abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
         res = DaoMongo.find_one(self.__adm_tabObj, '_id', id)
         if res:
@@ -203,7 +211,7 @@ class CreHandlerOne(Resource):
             else:
                 res.pop(self.__adm['media_id'])
                 res.pop(self.__adm['timestamp'])
-                res[self.__adm['id']] = res.pop('_id')
+                res[self.__adm['id']] = str(res.pop('_id'))
                 return res
         else:
             return self.__res['desc']['getone200']

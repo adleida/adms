@@ -54,5 +54,6 @@ setup(
         'requests==2.6.0',
         'toolz==0.7.1',
         'pillow==2.7.0',
+        'ipdb==0.8',
     ],  
 )

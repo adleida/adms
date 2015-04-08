@@ -20,6 +20,7 @@ class DspHandler(Resource):
     __res = __cfg['http']['res']
     __dsp_tabObj = __cfg['db']['mongo']['client']['dsp_tabObj']
     __dsp = __cfg['model']['dsp']
+    __fields = __res['fields']
 
     @classmethod
     def set_parser(cls, parser):
@@ -34,7 +35,7 @@ class DspHandler(Resource):
         try:
             json_req = request.get_json()
         except HTTPException as ex:
-            abort(self.__res['code'][500], message=ex.message)
+            abort(self.__res['code'][500], message=ex)
 
         # check format by using [ jsonschema ] here
         schemapath = Config.cfg['path']['schema']['dsp']
@@ -43,13 +44,14 @@ class DspHandler(Resource):
             abort(self.__res['code'][400], message=ex.message)
 
         # insert data here in mongo
-        # and first I specify [ id ] >>> [ _id ] in order to ensure primary key
-        json_req['_id'] = json_req.pop(self.__dsp['id'])
         json_req.setdefault(self.__dsp['timestamp'], time.time())
         res = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
         if res:
             if not res is True:
-                return self.__res['desc']['dsp201']
+                return {
+                           self.__fields['id']: str(res),
+                           self.__fields['message']: self.__res['desc']['dsp201']
+                       }
             else:
                 abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
         else:
@@ -60,8 +62,9 @@ class DspHandler(Resource):
         ''' remove advertisers's info '''
 
         args = self.parser.parse_args()
-        id_val = args[self.__param['id']]
-        if not id_val:
+        try:
+            id_val = udefault.get_objId(args[self.__param['id']])
+        except:
             abort(self.__res['code'][400], message=self.__res['desc']['del400'])
         res = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
         if res:
@@ -76,10 +79,11 @@ class DspHandler(Resource):
         ''' modify advertisers' info '''
 
         args = self.parser.parse_args()
-        id_val = args[self.__param['id']]
-        name_val = args[self.__param['name']]
-        burl_val = args[self.__param['burl']]
-        if not id_val:
+        try:
+            id_val = udefault.get_objId(args[self.__param['id']])
+            name_val = args[self.__param['name']]
+            burl_val = args[self.__param['burl']]
+        except:
             abort(self.__res['code'][400], message=self.__res['desc']['put400'])
         if name_val and burl_val:
             update_info = {
@@ -114,7 +118,7 @@ class DspHandler(Resource):
                 real_res = []
                 for per in res:
                     per.pop(self.__dsp['timestamp'])
-                    per[self.__dsp['id']] = per.pop('_id')
+                    per[self.__dsp['id']] = str(per.pop('_id'))
                     real_res.append(per)
                 return real_res
         else:
@@ -136,7 +140,9 @@ class DspHandlerOne(Resource):
     def get(self, id):
         ''' query one dsp info from advertisers' records '''
 
-        if not id:
+        try:
+            id = udefault.get_objId(id)
+        except:
             abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
         res = DaoMongo.find_one(self.__dsp_tabObj, '_id', id)
         if res:
@@ -144,7 +150,7 @@ class DspHandlerOne(Resource):
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
             else:
                 res.pop(self.__dsp['timestamp'])
-                res[self.__dsp['id']] = res.pop('_id')
+                res[self.__dsp['id']] = str(res.pop('_id'))
                 return res
         else:
             return self.__res['desc']['getone200']

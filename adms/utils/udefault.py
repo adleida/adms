@@ -7,6 +7,7 @@ import hashlib
 import yaml
 import json
 import jsonschema
+from bson import ObjectId
 from os import path
 from toolz.functoolz import memoize
 
@@ -69,3 +70,9 @@ def get_sha1(obj):
     ''' transfer string or buffer to sha1 whose type is string '''
 
     return hashlib.sha1(obj).hexdigest()
+
+
+def get_objId(string):
+    ''' get objectId from string '''
+
+    return ObjectId(string)

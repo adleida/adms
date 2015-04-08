@@ -71,6 +71,9 @@ http:
       - gif
     size: 16
   res:
+    fields:
+      id: id
+      message: message
     code:
       400: 400
       408: 408
@@ -89,8 +92,8 @@ http:
       dsp201: successfully create your dsp information to adexchange
       adm201: successfully create your adm information to adexchange
 
-      del400: please show me your id of field before delete
-      put400: please show me your dsp id before update
+      del400: please show me your correct id of field before delete
+      put400: please show me your correct dsp id before update
       update400: can you give me some update info?
       getone400: please show me your correct id before find one
       part400: incorrect upload, please check up your format of form
