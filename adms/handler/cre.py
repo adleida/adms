@@ -166,15 +166,17 @@ class CreHandler(Resource):
         ''' return get image via id '''
 
         # if you change _id from gridfs one day, please fix [ len(id) ] here
-        if (not id) or not len(id) == 40:
-            abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
+        if (not id) or (not len(id) == 40):
+            abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
+        res = DaoMongo.find_one(cls.__media_tabObj, '_id', id)
+        if res[cls.__media['approved']] is False:
+            return cls.__res['desc']['getnoapproved200']
         binary = DaoGridFS.get(cls.__fsObj, id)
         if binary is 2:
-            abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
-        else:
-            response = make_response(binary)
-            response.headers['Content-Type'] = 'image'
-            return response
+            abort(cls.__res['code']['500'], message=cls.__res['desc']['getone500'])
+        response = make_response(binary)
+        response.headers['Content-Type'] = 'image'
+        return response
 
 
 class CreHandlerOne(Resource):

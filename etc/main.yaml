@@ -84,6 +84,7 @@ http:
       # below descripion just for adleida members in the future
       getall200: you find nothing actually, maybe something error of mongo?
       getone200: you find nothing actually, confirm your providing
+      getnoapproved200: your request image did not pass the audit
 
       dsp201: successfully create your dsp information to adexchange
       adm201: successfully create your adm information to adexchange
@@ -114,6 +115,7 @@ path:
     adm: ../res/adm-add-schema.json
   templates:
     upload: upload.html
+    # upload: index.html
 
 db:
   mongo:
