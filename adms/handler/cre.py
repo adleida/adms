@@ -2,7 +2,7 @@
 
 import time
 import logging
-from flask import request, make_response, render_template
+from flask import request, make_response, render_template, jsonify
 from flask.ext.restful import Resource, abort
 from werkzeug import secure_filename
 from werkzeug.exceptions import HTTPException
@@ -133,35 +133,44 @@ class CreHandler(Resource):
         if request.method == 'POST':
             # check if the post request has the file part
             if 'accept_file' not in request.files:
-                abort(cls.__res['code'][400], cls.__res['desc']['part400'])
+                abort(cls.__res['code'][400], message=cls.__res['desc']['part400'])
          
             # I get binary of file from provider here
-            file = request.files['accept_file']
-            if file.filename == '':
-                abort(cls.__res['code'][417], cls.__res['desc']['selected417'])
-         
-            if file and allowed_file(cls, file.filename):
-                filename = secure_filename(file.filename)
-                binary = file.read()
-                _id = udefault.get_sha1(binary)
+            files = request.files.getlist('accept_file')
 
-                # define part of model here before saving to gridfs
-                media = {
-                    '_id': _id,
-                    'filename': _id,
-                    cls.__media['ref']: 0,
-                    cls.__media['approved']: False
-                }
+            total_res = {}
+            num = 0
+            for file in files:
 
-                res = DaoGridFS.put(cls.__fsObj, binary, media)
-                if res:
-                    # below url return media location to users
-                    # i.e. [ http://192.168.1.232:8008/v1/media/[id] ]
-                    return '{}{}'.format(cls.__url['prompt'], _id)
+                num += 1
+                if file.filename == '':
+                    abort(cls.__res['code'][417], message=cls.__res['desc']['selected417'])
+             
+                if file and allowed_file(cls, file.filename):
+                    filename = secure_filename(file.filename)
+                    binary = file.read()
+                    _id = udefault.get_sha1(binary)
+
+                    # define part of model here before saving to gridfs
+                    media = {
+                        '_id': _id,
+                        'filename': _id,
+                        cls.__media['ref']: 0,
+                        cls.__media['approved']: False
+                    }
+
+                    res = DaoGridFS.put(cls.__fsObj, binary, media)
+                    if res:
+                        # below url return media location to users
+                        # i.e. [ http://192.168.1.232:8008/v1/media/[id] ]
+                        total_res.setdefault('{}#{}'.format(filename, num), \
+                                '{}{}'.format(cls.__url['prompt'], _id))
+                    else:
+                        abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
                 else:
-                    abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
+                    abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
             else:
-                abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
+                return jsonify(total_res)
         return render_template(cls.__cfg['path']['templates']['upload'])
 
     @classmethod

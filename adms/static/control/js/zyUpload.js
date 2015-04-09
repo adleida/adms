@@ -20,7 +20,8 @@
 					height           : "400px",  					// 宽度
 					itemWidth        : "140px",                     // 文件项的宽度
 					itemHeight       : "120px",                     // 文件项的高度
-					url              : "/upload/UploadAction",  	// 上传文件的路径
+					// url              : "/upload/UploadAction",  	// 上传文件的路径
+					url              : "/v1/media/upload",  	// 上传文件的路径
 					multiple         : true,  						// 是否可以多个文件上传
 					dragDrop         : true,  						// 是否可以拖动上传文件
 					del              : true,  						// 是否可以删除文件
@@ -59,7 +60,7 @@
 	            	html += '				<div class="convent_choice">';
 	            	html += '					<div class="andArea">';
 	            	html += '						<div class="filePicker">点击选择文件</div>';
-	            	html += '						<input id="fileImage" type="file" size="30" name="fileselect[]" '+multiple+'>';
+	            	html += '						<input id="fileImage" type="file" size="30" name="accept_file" '+multiple+'>';
 	            	html += '					</div>';
 	            	html += '				</div>';
 					html += '				<span id="fileDragArea" class="upload_drag_area">或者将文件拖到此处</span>';
@@ -68,7 +69,7 @@
 		            html += '				<div id="status_info" class="info">选中0张文件，共0B。</div>';
 		            html += '				<div class="btns">';
 		            html += '					<div class="webuploader_pick">继续选择</div>';
-		            html += '					<div class="upload_btn">开始上传</div>';
+		            html += '					<input type="submit" class="upload_btn" value="开始上传"></input>';
 		            html += '				</div>';
 		            html += '			</div>';
 					html += '			<div id="preview" class="upload_preview"></div>';
@@ -89,9 +90,9 @@
 		            html += '			<div class="status_bar">';
 		            html += '				<div id="status_info" class="info">选中0张文件，共0B。</div>';
 		            html += '				<div class="btns">';
-		            html += '					<input id="fileImage" type="file" size="30" name="fileselect[]" '+multiple+'>';
+		            html += '					<input id="fileImage" type="file" size="30" name="accept_file" '+multiple+'>';
 		            html += '					<div class="webuploader_pick">选择文件</div>';
-		            html += '					<div class="upload_btn">开始上传</div>';
+		            html += '					<input type="submit" class="upload_btn" value="开始上传"></input>';
 		            html += '				</div>';
 		            html += '			</div>';
 		            html += '			<div id="preview" class="upload_preview">';
@@ -408,4 +409,3 @@
 		});
 	};
 })(jQuery);
-

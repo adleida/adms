@@ -8,11 +8,8 @@
     Flask-RESTful==0.3.2
     pyyaml==3.11
     pymongo==2.8
-    redis==2.10.3
     jsonschema==2.4.0
     toolz==0.7.1
-    requests==2.6.0
-    pillow==2.7.0
     ipdb==0.8
 
 ---
