@@ -1,6 +1,9 @@
+# coding: utf-8
 
-def test_hello():
-    pass
+from . import client
 
-def test_world():
-    pass
+
+def test_index(client):
+
+    res = client.get('/')
+    assert 'Welcome' in res.data.decode('utf-8')
