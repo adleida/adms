@@ -24,6 +24,7 @@ api = Api(app, catch_all_404s=True)
 
 # TODO point location in the future
 parser = reqparse.RequestParser()
+parser.add_argument(__param['access_token'], type=str)
 parser.add_argument(__param['id'], type=str)
 parser.add_argument(__param['name'], type=str)
 parser.add_argument(__param['burl'], type=str)
@@ -32,16 +33,14 @@ parser.add_argument(__param['burl'], type=str)
 # just a test method
 api.add_resource(Test, '/')
 
-
-# for advertiser's methods >>> [ /v1/dsp ]
+# for advertiser's methods >>> [ /v1/dsp/ ]
 DspHandler = DspHandler.set_parser(parser)
 api.add_resource(DspHandler, __url['dsp'])
 DspHandlerOne = DspHandlerOne.set_parser(parser)
 api.add_resource(DspHandlerOne, __url['one_dsp'])
 
-
-# for adm's method >>> [ /v1/adm ]
-# get one method >>> [ /v1/adm/<id>]
+# for adm's method >>> [ /v1/adm/ ]
+# get one method >>> [ /v1/adm/<id> ]
 CreHandler = CreHandler.set_parser(parser)
 api.add_resource(CreHandler, __url['adm'])
 CreHandlerOne = CreHandlerOne.set_parser(parser)

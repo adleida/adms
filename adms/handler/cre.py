@@ -9,6 +9,7 @@ from werkzeug.exceptions import HTTPException
 
 from ..config import Config
 from ..utils import udefault
+from ..auth import Authentication
 from ..dao.mongo.daomongo import DaoMongo
 from ..dao.mongo.daogridfs import DaoGridFS
 
@@ -18,14 +19,19 @@ class CreHandler(Resource):
     __cfg = Config.cfg
     __param = __cfg['app']['param']
     __url = __cfg['app']['url']
+
     __req = __cfg['http']['req']
     __res = __cfg['http']['res']
+    __token = __req['token']
+    __fields = __res['fields']
+
     __adm_tabObj = __cfg['db']['mongo']['client']['adm_tabObj']
     __media_tabObj = __cfg['db']['mongo']['client']['media_tabObj']
     __fsObj = __cfg['db']['gridfs']['client']['dbObj']
     __adm = __cfg['model']['adm']
     __media = __cfg['model']['media']
-    __fields = __res['fields']
+
+    _auth = ()
 
     @classmethod
     def set_parser(cls, parser):
@@ -35,6 +41,10 @@ class CreHandler(Resource):
     # TODO I'll implements multiply insert in the future
     def post(self):
         ''' create advertisers' media info '''
+
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
 
         try:
             json_req = request.get_json()
@@ -76,7 +86,10 @@ class CreHandler(Resource):
     def delete(self):
         ''' remove advertisers' media info '''
 
-        args = self.parser.parse_args()
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
+
         try:
             id_val = udefault.get_objId(args[self.__param['id']])
         except:
@@ -108,6 +121,10 @@ class CreHandler(Resource):
     def get(self):
         ''' query from advertisers' media info '''
 
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
+
         res = DaoMongo.find_all(self.__adm_tabObj)
         if res:
             if res is 2:
@@ -130,6 +147,10 @@ class CreHandler(Resource):
             return '.' in filename and \
                    filename.rsplit('.', 1)[1] in cls.__req['allow_ext']
 
+        cls._auth = _assert, _code = Authentication.verify(cls.__token, \
+                request.headers.get(cls.__param['access_token']), cls.__res)
+        if _code: return cls._auth
+
         if request.method == 'POST':
             # check if the post request has the file part
             if 'accept_file' not in request.files:
@@ -137,11 +158,10 @@ class CreHandler(Resource):
          
             # I get binary of file from provider here
             files = request.files.getlist('accept_file')
-
             total_res = {}
             num = 0
-            for file in files:
 
+            for file in files:
                 num += 1
                 if file.filename == '':
                     abort(cls.__res['code'][417], message=cls.__res['desc']['selected417'])
@@ -177,6 +197,10 @@ class CreHandler(Resource):
     def display(cls, id):
         ''' return get image via id '''
 
+        cls._auth = _assert, _code = Authentication.verify(cls.__token, \
+                request.headers.get(cls.__param['access_token']), cls.__res)
+        if _code: return cls._auth
+
         # if you change _id from gridfs one day, please fix [ len(id) ] here
         if (not id) or (not len(id) == 40):
             abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
@@ -197,9 +221,15 @@ class CreHandler(Resource):
 class CreHandlerOne(Resource):
 
     __cfg = Config.cfg
+    __param = __cfg['app']['param']
+
+    __token = __cfg['http']['req']['token']
     __res = __cfg['http']['res']
+
     __adm_tabObj = __cfg['db']['mongo']['client']['adm_tabObj']
     __adm = __cfg['model']['adm']
+
+    _auth = ()
 
     @classmethod
     def set_parser(cls, parser):
@@ -208,6 +238,10 @@ class CreHandlerOne(Resource):
 
     def get(self, id):
         ''' query one adm info from adm's records '''
+
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
 
         try:
             id = udefault.get_objId(id)

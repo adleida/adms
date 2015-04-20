@@ -17,10 +17,15 @@ class DspHandler(Resource):
     # here build some shortcut variety to provide convenience
     __cfg = Config.cfg
     __param = __cfg['app']['param']
+
     __res = __cfg['http']['res']
+    __token = __cfg['http']['req']['token']
+
     __dsp_tabObj = __cfg['db']['mongo']['client']['dsp_tabObj']
     __dsp = __cfg['model']['dsp']
     __fields = __res['fields']
+
+    _auth = ()
 
     @classmethod
     def set_parser(cls, parser):
@@ -30,6 +35,10 @@ class DspHandler(Resource):
     # TODO I'll implements multiply insert in the future
     def post(self):
         ''' create advertisers' info '''
+
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
 
         # get data from request object handler and put it to memory in model class
         try:
@@ -61,6 +70,10 @@ class DspHandler(Resource):
     def delete(self):
         ''' remove advertisers's info '''
 
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
+
         args = self.parser.parse_args()
         try:
             id_val = udefault.get_objId(args[self.__param['id']])
@@ -77,6 +90,10 @@ class DspHandler(Resource):
 
     def put(self):
         ''' modify advertisers' info '''
+
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
 
         args = self.parser.parse_args()
         try:
@@ -110,6 +127,10 @@ class DspHandler(Resource):
     def get(self):
         ''' query all from advertisers' info '''
 
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
+
         res = DaoMongo.find_all(self.__dsp_tabObj)
         if res:
             if res is 2:
@@ -128,9 +149,15 @@ class DspHandler(Resource):
 class DspHandlerOne(Resource):
 
     __cfg = Config.cfg
+    __param = __cfg['app']['param']
+
+    __token = __cfg['http']['req']['token']
     __res = __cfg['http']['res']
+
     __dsp_tabObj = __cfg['db']['mongo']['client']['dsp_tabObj']
     __dsp = __cfg['model']['dsp']
+
+    _auth = ()
 
     @classmethod
     def set_parser(cls, parser):
@@ -139,6 +166,10 @@ class DspHandlerOne(Resource):
 
     def get(self, id):
         ''' query one dsp info from advertisers' records '''
+
+        self._auth = _assert, _code = Authentication.verify(self.__token, \
+                request.headers.get(self.__param['access_token']), self.__res)
+        if _code: return self._auth
 
         try:
             id = udefault.get_objId(id)

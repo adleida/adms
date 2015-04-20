@@ -29,7 +29,6 @@ def load_resource(schemapath, as_object=True):
  
     blob = pkgutil.get_data(__package__, schemapath)
     if not blob:
-        # TODO to etc in the future
         raise Exception('no such resource: {}'.format(schemapath))
     data = blob.decode()
 
@@ -76,3 +75,15 @@ def get_objId(string):
     ''' get objectId from string '''
 
     return ObjectId(string)
+
+
+def encode_to_base64(string):
+    ''' encode to base64 code from string '''
+
+    return string.encode('base64')
+
+
+def decode_from_base64(base64_string):
+    ''' decode to string from base64 '''
+
+    return base64_string.decode('base64')

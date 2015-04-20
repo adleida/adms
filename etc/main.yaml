@@ -22,6 +22,7 @@ cli:
 
 app:
   param:
+    access_token: access_token
     id: id
     name: name
     burl: burl
@@ -64,6 +65,7 @@ model:
 
 http:
   req:
+    token: d19a1398-ccf5-4c47-868c-a4abaf24e011
     allow_ext:
       - jpg
       - jpeg
@@ -76,6 +78,7 @@ http:
       message: message
     code:
       400: 400
+      401: 401
       408: 408
       417: 417
       500: 500
@@ -98,6 +101,9 @@ http:
       getone400: please show me your correct id before find one
       part400: incorrect upload, please check up your format of form
       postfix400: please upload correct postfix of file
+
+      no401: you must provide token to us
+      err401: please confirm your token, it's wrong now
 
       408: process request timeout
 
