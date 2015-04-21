@@ -1,0 +1,15 @@
+Changelog
+=========
+
+Here you can see the full list of changes between each adms release.
+
+In Development
+--------------
+
+Version 0.0.2
+~~~~~~~~~~~
+
+- New: change [ media + adm ] POST method as [ base64 + all info ]
+  form:
+    1. append method that base64 encoded of media binary and app info save to our mongodb
+    2. on server side, I'll decode base64 to raw binary former and set it to gridfs then

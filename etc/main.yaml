@@ -56,6 +56,8 @@ model:
     timestamp: timestamp
   adm:
     id: id
+    data: data
+    img: img
     media_id: media_id
     timestamp: timestamp
   media:

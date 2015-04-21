@@ -56,10 +56,56 @@ class CreHandler(Resource):
         if not ok:
             abort(self.__res['code'][400], message=ex.message)
 
-        # here I gather all fields which I need
-        json_req.setdefault(self.__adm['timestamp'], time.time())
-        media_id = json_req['data']['img'].rsplit('/', 1)[1]
+        ##### accept base64 condition #####
+        # check the [ img ] field include string which start with [ http:// ] or not
+        # and this action occured after checking jsonschema
+        # process base64 encoded here!
+        img = json_req[self.__adm['data']][self.__adm['img']]
+        if not img.startswith('http://'):
+            try:
+                binary = udefault.decode_from_base64(img)
+            except HTTPException as ex:
+                abort(self.__res['code'][500], message=ex)
+
+            _id = udefault.get_sha1(binary)
+            media = {
+                '_id': _id,
+                'filename': _id,
+                cls.__media['ref']: 0,
+                cls.__media['approved']: False
+            }
+
+            # if res is True, I'll continue save other adm info to mongo
+            res = DaoGridFS.put(cls.__fsObj, binary, media)
+            if res:
+                json_req.setdefault(self.__adm['media_id'], res)
+                json_req.setdefault(self.__adm['timestamp'], time.time())
+                affirm_insert = DaoMongo.insert_one(self.__adm_tabObj, json_req)
+                if affirm_insert:
+                    if not affirm_insert is True:
+                        update_info = {
+                            self.__media['updated']: time.time()
+                        }
+                        inc_info = {
+                            self__media['ref']: 1
+                        }
+                        affirm_update = DaoMongo.update_one_sync(self.__media_tabObj, \
+                                '_id', media_id, \
+                                update_info, inc_info)
+                        if not affirm_update is True:
+                            abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
+                        return {
+                                    self.__fields['id']: str(affirm_insert),
+                                    self.__fields['message']: self.__res['desc']['adm201']
+                               }
+            else:
+                abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
+
+        ##### accept url condition #####
+        # first of all here I gather all fields which I need
+        media_id = img.rsplit('/', 1)[1]
         json_req.setdefault(self.__adm['media_id'], media_id)
+        json_req.setdefault(self.__adm['timestamp'], time.time())
         res = DaoMongo.insert_one(self.__adm_tabObj, json_req)
         if res:
             if not res is True:
