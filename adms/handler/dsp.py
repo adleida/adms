@@ -54,11 +54,11 @@ class DspHandler(Resource):
 
         # insert data here in mongo
         json_req.setdefault(self.__dsp['timestamp'], time.time())
-        res = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
-        if res:
-            if not res is True:
+        result = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
+        if result:
+            if not result is True:
                 return {
-                           self.__fields['id']: str(res),
+                           self.__fields['id']: str(result),
                            self.__fields['message']: self.__res['desc']['dsp201']
                        }
             else:
@@ -79,9 +79,9 @@ class DspHandler(Resource):
             id_val = udefault.get_objId(args[self.__param['id']])
         except:
             abort(self.__res['code'][400], message=self.__res['desc']['del400'])
-        res = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
-        if res:
-            if res is 2:
+        result = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
+        if result:
+            if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['del500'])
             else:
                 return self.__res['desc']['del200']
@@ -115,9 +115,9 @@ class DspHandler(Resource):
         else:
             abort(self.__res['code'][400], message=self.__res['desc']['update400'])
 
-        res = DaoMongo.update_one(self.__dsp_tabObj, '_id', id_val, update_info)
-        if res:
-            if res is 2:
+        result = DaoMongo.update_one(self.__dsp_tabObj, '_id', id_val, update_info)
+        if result:
+            if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['update500'])
             else:
                 return self.__res['desc']['put200']
@@ -131,13 +131,13 @@ class DspHandler(Resource):
                 request.headers.get(self.__param['access_token']), self.__res)
         if _code: return self._auth
 
-        res = DaoMongo.find_all(self.__dsp_tabObj)
-        if res:
-            if res is 2:
+        result = DaoMongo.find_all(self.__dsp_tabObj)
+        if result:
+            if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
             else:
                 real_res = []
-                for per in res:
+                for per in result:
                     per.pop(self.__dsp['timestamp'])
                     per[self.__dsp['id']] = str(per.pop('_id'))
                     real_res.append(per)
@@ -175,13 +175,13 @@ class DspHandlerOne(Resource):
             id = udefault.get_objId(id)
         except:
             abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
-        res = DaoMongo.find_one(self.__dsp_tabObj, '_id', id)
-        if res:
-            if res is 2:
+        result = DaoMongo.find_one(self.__dsp_tabObj, '_id', id)
+        if result:
+            if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
             else:
-                res.pop(self.__dsp['timestamp'])
-                res[self.__dsp['id']] = str(res.pop('_id'))
-                return res
+                result.pop(self.__dsp['timestamp'])
+                result[self.__dsp['id']] = str(result.pop('_id'))
+                return result
         else:
             return self.__res['desc']['getone200']

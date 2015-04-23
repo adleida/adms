@@ -125,8 +125,9 @@ path:
     dsp: ../res/dsp-add-schema.json
     adm: ../res/adm-add-schema.json
   templates:
-    # upload: upload.html
-    upload: index.html
+    upload: upload.html
+    # upload: index.html
+    verify: verify.html
 
 db:
   mongo:

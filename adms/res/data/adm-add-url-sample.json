@@ -1,9 +1,8 @@
 {
-    "id": "dwd",
     "type": 1,
     "did": "dsp-0",
     "data": {
-        "img": "http://192.168.1.232:8008/v1/media/71f15243a8475e238310edf4178cbcfd2fcf4e0b",
+        "img": "http://192.168.1.232:8008/v1/media/fb674909a1bf5c299840385c2e5d5c2cbfc47bed",
         "text": "app is very good",
         "app_url": "http://www.app.com/download/"
     }

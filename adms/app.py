@@ -22,6 +22,7 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = __req['size'] * 1024 * 1024
 api = Api(app, catch_all_404s=True)
 
+
 # TODO point location in the future
 parser = reqparse.RequestParser()
 parser.add_argument(__param['access_token'], type=str)

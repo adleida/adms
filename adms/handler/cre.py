@@ -60,6 +60,52 @@ class CreHandler(Resource):
         # check the [ img ] field include string which start with [ http:// ] or not
         # and this action occured after checking jsonschema
         # process base64 encoded here!
+        def rebase_post_adm(json_req, media_id, __dets, __defs, flag=False):
+            ''' here I need rebase post action trace and provide for muliti one '''
+            json_req.setdefault(__defs['__adm']['media_id'], media_id)
+            json_req.setdefault(__defs['__adm']['timestamp'], time.time())
+            if flag:
+                json_req[__defs['__adm']['data']][__defs['__adm']['img']] = \
+                        '{}{}'.format(__defs['__url']['prompt'], media_id)
+            result = DaoMongo.insert_one(__dets['__adm_tabObj'], json_req)
+            if result:
+                if not result is True:
+                    update_info = {
+                        __defs['__media']['updated']: time.time()
+                    }
+                    inc_info = {
+                        __defs['__media']['ref']: 1
+                    }
+                    affirm = DaoMongo.update_one_sync(__dets['__media_tabObj'], \
+                            '_id', media_id, \
+                            update_info, inc_info)
+                    if not affirm is True:
+                        abort(__defs['__res']['code'][500], \
+                                message=__defs['__res']['desc']['sync500'])
+                    return {
+                               __defs['__fields']['id']: str(result),
+                               __defs['__fields']['message']: __defs['__res']['desc']['adm201']
+                           }
+                else:
+                    abort(__defs['__res']['code'][417], message=__defs['__res']['desc']['dup417'])
+            else:
+                # TODO when error occured that log is too long
+                abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['insert500'])
+
+        # collect some depend fields
+        __defs = {
+            '__adm': self.__adm,
+            '__media': self.__media,
+            '__res': self.__res,
+            '__fields': self.__fields,
+            '__url': self.__url
+        }
+        # collect some depend tables objects
+        __dets = {
+            '__adm_tabObj': self.__adm_tabObj,
+            '__media_tabObj': self.__media_tabObj
+        }
+
         img = json_req[self.__adm['data']][self.__adm['img']]
         if not img.startswith('http://'):
             try:
@@ -71,63 +117,20 @@ class CreHandler(Resource):
             media = {
                 '_id': _id,
                 'filename': _id,
-                cls.__media['ref']: 0,
-                cls.__media['approved']: False
+                self.__media['ref']: 0,
+                self.__media['approved']: False
             }
 
-            # if res is True, I'll continue save other adm info to mongo
-            res = DaoGridFS.put(cls.__fsObj, binary, media)
-            if res:
-                json_req.setdefault(self.__adm['media_id'], res)
-                json_req.setdefault(self.__adm['timestamp'], time.time())
-                affirm_insert = DaoMongo.insert_one(self.__adm_tabObj, json_req)
-                if affirm_insert:
-                    if not affirm_insert is True:
-                        update_info = {
-                            self.__media['updated']: time.time()
-                        }
-                        inc_info = {
-                            self__media['ref']: 1
-                        }
-                        affirm_update = DaoMongo.update_one_sync(self.__media_tabObj, \
-                                '_id', media_id, \
-                                update_info, inc_info)
-                        if not affirm_update is True:
-                            abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
-                        return {
-                                    self.__fields['id']: str(affirm_insert),
-                                    self.__fields['message']: self.__res['desc']['adm201']
-                               }
-            else:
-                abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
+            # if result is True, I'll continue save other adm info to mongo
+            media_id = DaoGridFS.put(self.__fsObj, binary, media)
+            if media_id:
+                return rebase_post_adm(json_req, media_id, __dets, __defs, True)
+            abort(self.__res['code'][500], message=self.__res['desc']['upload500'])
 
         ##### accept url condition #####
         # first of all here I gather all fields which I need
         media_id = img.rsplit('/', 1)[1]
-        json_req.setdefault(self.__adm['media_id'], media_id)
-        json_req.setdefault(self.__adm['timestamp'], time.time())
-        res = DaoMongo.insert_one(self.__adm_tabObj, json_req)
-        if res:
-            if not res is True:
-                update_info = {
-                    self.__media['updated']: time.time()
-                }
-                inc_info = {
-                    self.__media['ref']: 1
-                }
-                affirm = DaoMongo.update_one_sync(self.__media_tabObj, '_id', media_id, \
-                        update_info, inc_info)
-                if not affirm is True:
-                    abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
-                return {
-                           self.__fields['id']: str(res),
-                           self.__fields['message']: self.__res['desc']['adm201']
-                       }
-            else:
-                abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
-        else:
-            # TODO when error occured that log is too long
-            abort(self.__res['code'][500], message=self.__res['desc']['insert500'])
+        return rebase_post_adm(json_req, media_id, __dets, __defs)
 
     def delete(self):
         ''' remove advertisers' media info '''
@@ -149,9 +152,9 @@ class CreHandler(Resource):
         else:
             return self.__res['desc']['delno200']
 
-        res = DaoMongo.remove_one(self.__adm_tabObj, '_id', id_val)
-        if res:
-            if res is 2:
+        result = DaoMongo.remove_one(self.__adm_tabObj, '_id', id_val)
+        if result:
+            if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['del500'])
             else:
                 inc_info = {
@@ -171,13 +174,13 @@ class CreHandler(Resource):
                 request.headers.get(self.__param['access_token']), self.__res)
         if _code: return self._auth
 
-        res = DaoMongo.find_all(self.__adm_tabObj)
-        if res:
-            if res is 2:
+        result = DaoMongo.find_all(self.__adm_tabObj)
+        if result:
+            if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
             else:
                 real_res = []
-                for per in res:
+                for per in result:
                     per.pop(self.__adm['media_id'])
                     per.pop(self.__adm['timestamp'])
                     per[self.__adm['id']] = str(per.pop('_id'))
@@ -193,11 +196,14 @@ class CreHandler(Resource):
             return '.' in filename and \
                    filename.rsplit('.', 1)[1] in cls.__req['allow_ext']
 
-        cls._auth = _assert, _code = Authentication.verify(cls.__token, \
-                request.headers.get(cls.__param['access_token']), cls.__res)
-        if _code: return cls._auth
-
         if request.method == 'POST':
+
+            # TODO below commited code may allow all peopel upload
+            # TODO if one day use auth, you could discard page and switch commit
+            # cls._auth = _assert, _code = Authentication.verify(cls.__token, \
+            #         request.headers.get(cls.__param['access_token']), cls.__res)
+            # if _code: return cls._auth
+
             # check if the post request has the file part
             if 'accept_file' not in request.files:
                 abort(cls.__res['code'][400], message=cls.__res['desc']['part400'])
@@ -225,10 +231,10 @@ class CreHandler(Resource):
                         cls.__media['approved']: False
                     }
 
-                    res = DaoGridFS.put(cls.__fsObj, binary, media)
-                    if res:
-                        # below url return media location to users
-                        # i.e. [ http://192.168.1.232:8008/v1/media/[id] ]
+                    # below url return media location to users
+                    # i.e. [ http://192.168.1.232:8008/v1/media/<id> ]
+                    result = DaoGridFS.put(cls.__fsObj, binary, media)
+                    if result:
                         total_res.setdefault('{}#{}'.format(filename, num), \
                                 '{}{}'.format(cls.__url['prompt'], _id))
                     else:
@@ -243,18 +249,14 @@ class CreHandler(Resource):
     def display(cls, id):
         ''' return get image via id '''
 
-        cls._auth = _assert, _code = Authentication.verify(cls.__token, \
-                request.headers.get(cls.__param['access_token']), cls.__res)
-        if _code: return cls._auth
-
         # if you change _id from gridfs one day, please fix [ len(id) ] here
         if (not id) or (not len(id) == 40):
             abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
-        res = DaoMongo.find_one(cls.__media_tabObj, '_id', id)
+        result = DaoMongo.find_one(cls.__media_tabObj, '_id', id)
 
         # if you debug advanced, commit below two lines
-        if res[cls.__media['approved']] is False:
-            return cls.__res['desc']['getnoapproved200']
+        # if result[cls.__media['approved']] is False:
+        #     return cls.__res['desc']['getnoapproved200']
 
         binary = DaoGridFS.get(cls.__fsObj, id)
         if binary is 2:
@@ -293,14 +295,14 @@ class CreHandlerOne(Resource):
             id = udefault.get_objId(id)
         except:
             abort(self.__res['code'][400], message=self.__res['desc']['getone400'])
-        res = DaoMongo.find_one(self.__adm_tabObj, '_id', id)
-        if res:
-            if res is 2:
+        result = DaoMongo.find_one(self.__adm_tabObj, '_id', id)
+        if result:
+            if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
             else:
-                res.pop(self.__adm['media_id'])
-                res.pop(self.__adm['timestamp'])
-                res[self.__adm['id']] = str(res.pop('_id'))
-                return res
+                result.pop(self.__adm['media_id'])
+                result.pop(self.__adm['timestamp'])
+                result[self.__adm['id']] = str(result.pop('_id'))
+                return result
         else:
             return self.__res['desc']['getone200']

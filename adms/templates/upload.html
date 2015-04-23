@@ -1,8 +1,25 @@
-<!doctype html>
-<title>Upload new File</title>
-<h1>Welcome To Adleida Simple Uploader</h1>
-<form action="" method=post enctype=multipart/form-data>
-  <p><input type=file name=accept_file>
-    <input type=submit value=Check>
-  </p>
-</form>
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Adleida Simple Uploader</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='control/images/logo.ico') }}" type="image/x-icon">
+
+    <!-- 引用控制层插件样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='upload/control/css/zyUpload.css') }}" type="text/css">
+    
+    <script type="text/javascript" src="{{ url_for('static', filename='upload/jquery-1.7.2.js') }}"></script>
+    <!-- 引用核心层插件 -->
+    <script type="text/javascript" src="{{ url_for('static', filename='upload/core/zyFile.js') }}"></script>
+    <!-- 引用控制层插件 -->
+    <script type="text/javascript" src="{{ url_for('static', filename='upload/control/js/zyUpload.js') }}"></script>
+    <!-- 引用初始化JS -->
+    <script type="text/javascript" src="{{ url_for('static', filename='upload/demo.js') }}"></script>
+  </head>
+
+<body>
+  <h1 style="text-align:center;">Adleida Simple Uploader</h1>
+  <div id="demo" class="demo"></div>   
+  </div>
+</body>
+</html>
