@@ -52,6 +52,7 @@ setup(
         # 'redis==2.10.3',
         'jsonschema==2.4.0',
         'requests==2.6.0',
+        'flask-util-js==0.2.25',
         'toolz==0.7.1',
         # 'pillow==2.7.0',
         'ipdb==0.8',

@@ -124,6 +124,8 @@ class CreHandler(Resource):
             # if result is True, I'll continue save other adm info to mongo
             media_id = DaoGridFS.put(self.__fsObj, binary, media)
             if media_id:
+                if media_id is True:
+                    media_id = _id
                 return rebase_post_adm(json_req, media_id, __dets, __defs, True)
             abort(self.__res['code'][500], message=self.__res['desc']['upload500'])
 
@@ -139,6 +141,7 @@ class CreHandler(Resource):
                 request.headers.get(self.__param['access_token']), self.__res)
         if _code: return self._auth
 
+        args = self.parser.parse_args()
         try:
             id_val = udefault.get_objId(args[self.__param['id']])
         except:
@@ -198,8 +201,8 @@ class CreHandler(Resource):
 
         if request.method == 'POST':
 
-            # TODO below commited code may allow all peopel upload
-            # TODO if one day use auth, you could discard page and switch commit
+            # TODO below commited code may allow all people upload
+            # TODO if one day use auth, you could discard page and switch uncommit
             # cls._auth = _assert, _code = Authentication.verify(cls.__token, \
             #         request.headers.get(cls.__param['access_token']), cls.__res)
             # if _code: return cls._auth
@@ -264,6 +267,36 @@ class CreHandler(Resource):
         response = make_response(binary)
         response.headers['Content-Type'] = 'image'
         return response
+
+    @classmethod
+    def verify_init(cls):
+        ''' first time load verify.html and display info to template '''
+
+        result = DaoMongo.find_all(cls.__adm_tabObj, 6)
+        for per in result:
+            per[cls.__adm['id']] = str(per.pop('_id'))
+            affirm = DaoMongo.find_one(cls.__media_tabObj, \
+                    '_id', per[cls.__adm['media_id']])
+            if affirm is 2:
+                return render_template(cls.__cfg['path']['templates']['verify'], \
+                        result=' ')
+            per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
+        if (result) and (not result is 2):
+            return render_template(cls.__cfg['path']['templates']['verify'], \
+                    result=result)
+        else:
+            return render_template(cls.__cfg['path']['templates']['verify'], \
+                    result=' ')
+
+    @classmethod
+    def verify_click(cls, media_id):
+        ''' on click event '''
+
+        print media_id
+        print type(media_id)
+        print bool(media_id)
+        print media_id
+        return media_id, 200, {'Content-Type': 'text/plain'}
 
 
 class CreHandlerOne(Resource):

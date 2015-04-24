@@ -2,7 +2,7 @@
     "type": 1,
     "did": "dsp-0",
     "data": {
-        "img": "http://192.168.1.232:8008/v1/media/fb674909a1bf5c299840385c2e5d5c2cbfc47bed",
+        "img": "http://127.0.0.1:8008/v1/media/85ae4efcc7d95ffb8856000df23c1a785b2b04ea",
         "text": "app is very good",
         "app_url": "http://www.app.com/download/"
     }

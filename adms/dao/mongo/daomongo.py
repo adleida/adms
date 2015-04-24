@@ -112,11 +112,14 @@ class DaoMongo(object):
             return False
 
     @classmethod
-    def find_all(cls, tabObj):
+    def find_all(cls, tabObj, limit=None):
         ''' find all documents from mongo '''
 
         try:
-            cursor = tabObj.find()
+            if limit:
+                cursor = tabObj.find().limit(limit)
+            else:
+                cursor = tabObj.find()
         except Exception as ex:
             logging.error('[FIND_ALL_FROM_MONGO] {} >>> {}'.format(ex, tabObj))
             return 2

@@ -18,6 +18,7 @@ __req = Config.cfg['http']['req']
 
 
 app = Flask(__name__)
+
 # return [413] if [ Request Entity Too Large ]
 app.config['MAX_CONTENT_LENGTH'] = __req['size'] * 1024 * 1024
 api = Api(app, catch_all_404s=True)
@@ -58,3 +59,15 @@ def upload():
 @app.route(__url['media'], methods=['GET'])
 def display(id):
     return CreHandler.display(id)
+
+
+# for media's examination init >>> [ /v1/media/verify ]
+@app.route(__url['verify_init'], methods=['GET'])
+def verify_init():
+    return CreHandler.verify_init()
+
+
+# for media's examination on click redirect >>> [ /v1/media/verify/<media_id> ]
+@app.route(__url['verify_click'], methods=['GET', 'POST'])
+def verify_click(media_id):
+    return CreHandler.verify_click(media_id)

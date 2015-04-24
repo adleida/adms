@@ -1,0 +1,9 @@
+{
+    "type": 1,
+    "did": "dsp-0",
+    "data": {
+        "img": "http://127.0.0.1:8008/v1/media/43b45c8cc12a71b93e50003c8b51126dbaa1545a",
+        "text": "app is very good",
+        "app_url": "http://www.app.com/download/"
+    }
+}

@@ -51,6 +51,12 @@
  4. 连同其他信息经过字段处理后入库 mongo
  5. 入口后更新物料关联 (`ref` `updated`)
 
+- 测试
+
+ - 录入文件
+ import json
+ `json.dump(data, file, indent=2)`
+
 ---
 
 ###cre.py 模块 (物料上传)
