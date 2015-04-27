@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Adleida 人工审核物料</title>
-<link rel="shortcut icon" href="{{ url_for('static', filename='control/images/logo.ico') }}" type="image/x-icon">
+<link rel="shortcut icon" href="{{ url_for('static', filename='upload/control/images/logo.ico') }}" type="image/x-icon">
 
 <link rel='stylesheet' href="{{ url_for('static', filename='verify/css/style.css') }}" media='screen'/>
 <link rel='stylesheet' href="{{ url_for('static', filename='verify/css/buttons.css') }}" media='screen'/>
@@ -23,9 +23,9 @@
       <div class="imgholder">
         <img class="lazy" src="{{ url_for('static', filename='verify/images/loading.gif') }}" data-original="{{ per.data.img }}" width="260"/>
         {% if per.approved %}
-        <button id="{{ per.media_id }}" class="button button-3d button-action button-circle button-jumbo" style="float:right" value="{{ per.approved }}"><i class="fa fa-thumbs-up"></i></button>
+        <button id="{{ per.media_id }}" class="button button-3d button-action button-circle button-jumbo" onclick="verify($(this))" style="float:right" value="{{ per.approved }}"><i class="fa fa-thumbs-up"></i></button>
         {% else %}
-        <button id="{{ per.media_id }}" class="button button-3d button-box button-circle button-jumbo" style="float:right" value="{{ per.approved }}"><i class="fa fa-thumbs-up"></i></button>
+        <button id="{{ per.media_id }}" class="button button-3d button-box button-circle button-jumbo" onclick="verify($(this))" style="float:right" value="{{ per.approved }}"><i class="fa fa-thumbs-up"></i></button>
         {% endif %}
       </div>
       <strong>{{ per.id }}</strong>
@@ -37,7 +37,7 @@
   </div>
 </div>
 
-<div id="test" style="display:none;">
+<div id="new" style="display:none;">
   <div class="grid">
     <div class="imgholder">
       <img class="lazy" src="{{ url_for('static', filename='verify/images/loading.gif') }}" data-original="{{ url_for('static', filename='verify/images/2.jpg') }}" width="260"/></div>
@@ -81,6 +81,34 @@
 </div>
 
 <script type="text/javascript">
+function verify(_element){
+    var id_val = $(_element).attr('id');
+    var value = $(_element).attr('value');
+    $.ajax({
+        type: 'POST',
+        url: "{{ url_for('verify_click') }}",
+        data: JSON.stringify({'id': id_val, 'value': value}),
+        contentType: 'application/json;charset=UTF-8',
+        async: true,
+        success: function(result){
+            /*  here I just make a justice and do toggleClass
+                [ button button-3d button-action button-circle button-jumbo ]
+                [ button button-3d button-box button-circle button-jumbo ] */
+            if(value == 'True'){
+                $(_element).attr('class', 'button button-3d button-box button-circle button-jumbo');
+                $(_element).attr('value', 'False');
+            }else{
+                $(_element).attr('class', 'button button-3d button-action button-circle button-jumbo');
+                $(_element).attr('value', 'True');
+            }
+            console.log(result);
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+}
+
 $(function(){
     $("img.lazy").lazyload({
         load:function(){
@@ -92,8 +120,41 @@ $(function(){
         }
     });
     $(window).scroll(function(){
-        if ($(document).height() - $(this).scrollTop() - $(this).height()<50){
-            $('#container').append($("#test").html());	
+        if ($(document).height() - $(this).scrollTop() - $(this).height() < 50){
+            $.ajax({
+                type: 'GET',
+                url: "{{ url_for('verify_scroll') }}",
+                async: false,
+                success: function(result){
+                    var items = result.result;
+                    var divs = $('#new').children();
+                    for(var index = 0; index < divs.length; index++){
+                        // here I get every div from divs(children of [ id=new ])
+                        var div = divs[index];
+                        var item = items[index];
+                        var btn = jQuery('button', div);
+                        id_val = item['id'];
+                        img_link = item['data']['img'];
+                        jQuery('img', div).attr('data-original', img_link);
+                        btn.attr('id', id_val);
+                        btn.attr('onclick', 'verify($(this))');
+                        if(item['approved']){
+                            btn.attr('class', 'button button-3d button-action button-circle button-jumbo');
+                        }else{
+                            btn.attr('class', 'button button-3d button-box button-circle button-jumbo');
+                        }
+                        jQuery('strong', div).text(id_val);
+                        jQuery('p', div).text(item['data']['text']);
+                        jQuery('a', div).attr('href', img_link);
+                    }
+                    console.log(divs);
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+
+            $('#container').append($('#new').html());	
             $('#container').BlocksIt({
                 numOfCol:3,
                 offsetX: 8,
@@ -103,28 +164,6 @@ $(function(){
         }
     });
 
-    var commandButtons = document.querySelectorAll(".button");
-    for(var i = 0; i < commandButtons.length; i++){
-        var per_btn = commandButtons[i];
-        per_btn.addEventListener("click", function(e, callback){
-            e.preventDefault();
-            var clickedButton = e.target;
-            var command = clickedButton.value;
-            // flask_util.url_for('verify_click', {media_id: command});
-            var xhr = new XMLHttpRequest();
-            // request.onload = function() {
-            //     command = !Boolean(command);
-            // };
-            xhr.open("GET", "/v1/media/verify/" + command, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4) {
-                    callback(alert(xhr.responseText));
-                }
-            }
-            xhr.send();
-        });
-    }
-    
     //window resize
     var currentWidth = 1100;
     $(window).resize(function() {

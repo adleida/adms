@@ -67,7 +67,13 @@ def verify_init():
     return CreHandler.verify_init()
 
 
-# for media's examination on click redirect >>> [ /v1/media/verify/<media_id> ]
-@app.route(__url['verify_click'], methods=['GET', 'POST'])
-def verify_click(media_id):
-    return CreHandler.verify_click(media_id)
+# for media's examination on click redirect >>> [ /v1/media/verify/click ]
+@app.route(__url['verify_click'], methods=['POST'])
+def verify_click():
+    return CreHandler.verify_click()
+
+
+# for media's examination scroll append new html >>> [ /v1/media/verify/scroll ]
+@app.route(__url['verify_scroll'], methods=['GET'])
+def verify_scroll():
+    return CreHandler.verify_scroll()

@@ -39,14 +39,15 @@ app:
     one_adm: /v1/adm/<id>
     # [ * NOTICE ]
     # if you change host, you must modify below url
-    prompt: http://127.0.0.1:8008/v1/media/
+    prompt: http://192.168.1.232:8008/v1/media/
     upload: /v1/media/upload
     # [ * NOTICE ]
     # if you change <id> in the future
     # you also need to fix parameters in CreHandler [ display ] method
     media: /v1/media/<id>
     verify_init: /v1/media/verify
-    verify_click: /v1/media/verify/<media_id>
+    verify_click: /v1/media/verify/click
+    verify_scroll: /v1/media/verify/scroll
 
 model:
   dsp:
@@ -75,7 +76,10 @@ http:
       - jpeg
       - png
       - gif
+      - ico
     size: 16
+    init_limit: 6
+    scroll_limit: 6
   res:
     fields:
       id: id

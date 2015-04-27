@@ -269,34 +269,52 @@ class CreHandler(Resource):
         return response
 
     @classmethod
-    def verify_init(cls):
+    def verify_init(cls, limit=None, scroll=False):
         ''' first time load verify.html and display info to template '''
 
-        result = DaoMongo.find_all(cls.__adm_tabObj, 6)
+        if not limit:
+            limit = cls.__req['init_limit']
+        result = DaoMongo.find_all(cls.__adm_tabObj, limit)
         for per in result:
             per[cls.__adm['id']] = str(per.pop('_id'))
             affirm = DaoMongo.find_one(cls.__media_tabObj, \
                     '_id', per[cls.__adm['media_id']])
             if affirm is 2:
-                return render_template(cls.__cfg['path']['templates']['verify'], \
-                        result=' ')
+                return render_template(cls.__cfg['path']['templates']['verify'])
             per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
         if (result) and (not result is 2):
-            return render_template(cls.__cfg['path']['templates']['verify'], \
-                    result=result)
+            if not scroll:
+                return render_template(cls.__cfg['path']['templates']['verify'], \
+                        result=result)
+            return jsonify(result=result)
         else:
-            return render_template(cls.__cfg['path']['templates']['verify'], \
-                    result=' ')
+            return render_template(cls.__cfg['path']['templates']['verify'])
 
     @classmethod
-    def verify_click(cls, media_id):
+    def verify_click(cls):
         ''' on click event '''
 
-        print media_id
-        print type(media_id)
-        print bool(media_id)
-        print media_id
-        return media_id, 200, {'Content-Type': 'text/plain'}
+        json_req = request.json
+
+        # key [ id ] and [ value ] here mapping js script's variable
+        value = False if 'True' in json_req['value'] else True
+        id = json_req['id']
+
+        result = DaoMongo.update_one(cls.__media_tabObj, \
+                '_id', id, { cls.__media['approved']: value })
+        if result:
+            if result is 2:
+                abort(cls.__res['code'][500], message=cls.__res['desc']['update500'])
+            else:
+                return cls.__res['desc']['put200']
+        else:
+            return cls.__res['desc']['putno200']
+
+    @classmethod
+    def verify_scroll(cls):
+        ''' on scroll event '''
+
+        return cls.verify_init(limit=cls.__req['scroll_limit'], scroll=True)
 
 
 class CreHandlerOne(Resource):
