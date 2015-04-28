@@ -9,6 +9,7 @@ from werkzeug.exceptions import HTTPException
 # here I get http response error code from global object cfg of Config class
 from ..config import Config
 from ..utils import udefault
+from ..auth import Authentication
 from ..dao.mongo.daomongo import DaoMongo
 
 
@@ -61,11 +62,9 @@ class DspHandler(Resource):
                            self.__fields['id']: str(result),
                            self.__fields['message']: self.__res['desc']['dsp201']
                        }
-            else:
-                abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
-        else:
-            # TODO when error occured that log is too long
-            abort(self.__res['code'][500], message=self.__res['desc']['insert500'])
+            abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
+        # TODO when error occured that log is too long
+        abort(self.__res['code'][500], message=self.__res['desc']['insert500'])
 
     def delete(self):
         ''' remove advertisers's info '''
@@ -83,10 +82,8 @@ class DspHandler(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['del500'])
-            else:
-                return self.__res['desc']['del200']
-        else:
-            return self.__res['desc']['delno200']
+            return self.__res['desc']['del200']
+        return self.__res['desc']['delno200']
 
     def put(self):
         ''' modify advertisers' info '''
@@ -119,10 +116,8 @@ class DspHandler(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['update500'])
-            else:
-                return self.__res['desc']['put200']
-        else:
-            return self.__res['desc']['putno200']
+            return self.__res['desc']['put200']
+        return self.__res['desc']['putno200']
 
     def get(self):
         ''' query all from advertisers' info '''
@@ -135,15 +130,13 @@ class DspHandler(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
-            else:
-                real_res = []
-                for per in result:
-                    per.pop(self.__dsp['timestamp'])
-                    per[self.__dsp['id']] = str(per.pop('_id'))
-                    real_res.append(per)
-                return real_res
-        else:
-            return self.__res['desc']['getall200']
+            real_res = []
+            for per in result:
+                per.pop(self.__dsp['timestamp'])
+                per[self.__dsp['id']] = str(per.pop('_id'))
+                real_res.append(per)
+            return real_res
+        return self.__res['desc']['getall200']
 
 
 class DspHandlerOne(Resource):
@@ -179,9 +172,7 @@ class DspHandlerOne(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
-            else:
-                result.pop(self.__dsp['timestamp'])
-                result[self.__dsp['id']] = str(result.pop('_id'))
-                return result
-        else:
-            return self.__res['desc']['getone200']
+            result.pop(self.__dsp['timestamp'])
+            result[self.__dsp['id']] = str(result.pop('_id'))
+            return result
+        return self.__res['desc']['getone200']

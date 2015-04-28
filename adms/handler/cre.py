@@ -32,6 +32,7 @@ class CreHandler(Resource):
     __media = __cfg['model']['media']
 
     _auth = ()
+    skip_num = 0
 
     @classmethod
     def set_parser(cls, parser):
@@ -86,11 +87,9 @@ class CreHandler(Resource):
                                __defs['__fields']['id']: str(result),
                                __defs['__fields']['message']: __defs['__res']['desc']['adm201']
                            }
-                else:
-                    abort(__defs['__res']['code'][417], message=__defs['__res']['desc']['dup417'])
-            else:
-                # TODO when error occured that log is too long
-                abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['insert500'])
+                abort(__defs['__res']['code'][417], message=__defs['__res']['desc']['dup417'])
+            # TODO when error occured that log is too long
+            abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['insert500'])
 
         # collect some depend fields
         __defs = {
@@ -150,25 +149,21 @@ class CreHandler(Resource):
         if find_res:
             if find_res is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['getone500'])
-            else:
-                media_id = find_res[self.__adm['media_id']]
-        else:
-            return self.__res['desc']['delno200']
+            media_id = find_res[self.__adm['media_id']]
+        return self.__res['desc']['delno200']
 
         result = DaoMongo.remove_one(self.__adm_tabObj, '_id', id_val)
         if result:
             if result is 2:
                 abort(self.__res['code'][500], message=self.__res['desc']['del500'])
-            else:
-                inc_info = {
-                    self.__media['ref']: -1
-                }
-                affirm_inc = DaoMongo.update_one_inc(self.__media_tabObj, '_id', media_id, inc_info)
-                if not affirm_inc is True:
-                    abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
-                return self.__res['desc']['del200']
-        else:
-            return self.__res['desc']['delno200']
+            inc_info = {
+                self.__media['ref']: -1
+            }
+            affirm_inc = DaoMongo.update_one_inc(self.__media_tabObj, '_id', media_id, inc_info)
+            if not affirm_inc is True:
+                abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
+            return self.__res['desc']['del200']
+        return self.__res['desc']['delno200']
 
     def get(self):
         ''' query from advertisers' media info '''
@@ -181,16 +176,14 @@ class CreHandler(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
-            else:
-                real_res = []
-                for per in result:
-                    per.pop(self.__adm['media_id'])
-                    per.pop(self.__adm['timestamp'])
-                    per[self.__adm['id']] = str(per.pop('_id'))
-                    real_res.append(per)
-                return real_res
-        else:
-            return self.__res['desc']['getall200']
+            real_res = []
+            for per in result:
+                per.pop(self.__adm['media_id'])
+                per.pop(self.__adm['timestamp'])
+                per[self.__adm['id']] = str(per.pop('_id'))
+                real_res.append(per)
+            return real_res
+        return self.__res['desc']['getall200']
 
     @classmethod
     def upload(cls, request):
@@ -240,10 +233,8 @@ class CreHandler(Resource):
                     if result:
                         total_res.setdefault('{}#{}'.format(filename, num), \
                                 '{}{}'.format(cls.__url['prompt'], _id))
-                    else:
-                        abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
-                else:
-                    abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
+                    abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
+                abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
             else:
                 return jsonify(total_res)
         return render_template(cls.__cfg['path']['templates']['upload'])
@@ -287,14 +278,16 @@ class CreHandler(Resource):
                 return render_template(cls.__cfg['path']['templates']['verify'], \
                         result=result)
             return jsonify(result=result)
-        else:
-            return render_template(cls.__cfg['path']['templates']['verify'])
+        return render_template(cls.__cfg['path']['templates']['verify'])
 
     @classmethod
     def verify_click(cls):
         ''' on click event '''
 
-        json_req = request.json
+        try:
+            json_req = request.json
+        except HTTPException as ex:
+            abort(cls.__res['code'][500], message=ex)
 
         # key [ id ] and [ value ] here mapping js script's variable
         value = False if 'True' in json_req['value'] else True
@@ -305,10 +298,8 @@ class CreHandler(Resource):
         if result:
             if result is 2:
                 abort(cls.__res['code'][500], message=cls.__res['desc']['update500'])
-            else:
-                return cls.__res['desc']['put200']
-        else:
-            return cls.__res['desc']['putno200']
+            return cls.__res['desc']['put200']
+        return cls.__res['desc']['putno200']
 
     @classmethod
     def verify_scroll(cls):
@@ -350,10 +341,8 @@ class CreHandlerOne(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
-            else:
-                result.pop(self.__adm['media_id'])
-                result.pop(self.__adm['timestamp'])
-                result[self.__adm['id']] = str(result.pop('_id'))
-                return result
-        else:
-            return self.__res['desc']['getone200']
+            result.pop(self.__adm['media_id'])
+            result.pop(self.__adm['timestamp'])
+            result[self.__adm['id']] = str(result.pop('_id'))
+            return result
+        return self.__res['desc']['getone200']
