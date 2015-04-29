@@ -32,7 +32,6 @@ class CreHandler(Resource):
     __media = __cfg['model']['media']
 
     _auth = ()
-    skip_num = 0
 
     @classmethod
     def set_parser(cls, parser):
@@ -260,20 +259,26 @@ class CreHandler(Resource):
         return response
 
     @classmethod
-    def verify_init(cls, limit=None, scroll=False):
+    def verify_init(cls, scroll=False):
         ''' first time load verify.html and display info to template '''
 
-        if not limit:
-            limit = cls.__req['init_limit']
-        result = DaoMongo.find_all(cls.__adm_tabObj, limit)
-        for per in result:
-            per[cls.__adm['id']] = str(per.pop('_id'))
-            affirm = DaoMongo.find_one(cls.__media_tabObj, \
-                    '_id', per[cls.__adm['media_id']])
-            if affirm is 2:
-                return render_template(cls.__cfg['path']['templates']['verify'])
-            per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
+        if not scroll:
+            result = DaoMongo.find_all(cls.__adm_tabObj, \
+                    cls.__req['init_limit'])
+            # TODO I'll do skip number then
+        else:
+            result = DaoMongo.find_all(cls.__adm_tabObj, \
+                    cls.__req['scroll_limit'], skip=0)
+
         if (result) and (not result is 2):
+            for per in result:
+                per[cls.__adm['id']] = str(per.pop('_id'))
+                affirm = DaoMongo.find_one(cls.__media_tabObj, \
+                        '_id', per[cls.__adm['media_id']])
+                if affirm is 2:
+                    return render_template(cls.__cfg['path']['templates']['verify'])
+                per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
+
             if not scroll:
                 return render_template(cls.__cfg['path']['templates']['verify'], \
                         result=result)
@@ -305,7 +310,7 @@ class CreHandler(Resource):
     def verify_scroll(cls):
         ''' on scroll event '''
 
-        return cls.verify_init(limit=cls.__req['scroll_limit'], scroll=True)
+        return cls.verify_init(scroll=True)
 
 
 class CreHandlerOne(Resource):
