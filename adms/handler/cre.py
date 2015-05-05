@@ -259,16 +259,15 @@ class CreHandler(Resource):
         return response
 
     @classmethod
-    def verify_init(cls, scroll=False):
+    def verify_init(cls, skip_num=None):
         ''' first time load verify.html and display info to template '''
 
-        if not scroll:
+        if skip_num is None:
             result = DaoMongo.find_all(cls.__adm_tabObj, \
                     cls.__req['init_limit'])
-            # TODO I'll do skip number then
         else:
             result = DaoMongo.find_all(cls.__adm_tabObj, \
-                    cls.__req['scroll_limit'], skip=0)
+                    cls.__req['scroll_limit'], skip=skip_num)
 
         if (result) and (not result is 2):
             for per in result:
@@ -279,7 +278,7 @@ class CreHandler(Resource):
                     return render_template(cls.__cfg['path']['templates']['verify'])
                 per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
 
-            if not scroll:
+            if skip_num is None:
                 return render_template(cls.__cfg['path']['templates']['verify'], \
                         result=result)
             return jsonify(result=result)
@@ -310,7 +309,15 @@ class CreHandler(Resource):
     def verify_scroll(cls):
         ''' on scroll event '''
 
-        return cls.verify_init(scroll=True)
+        # maybe here will bring reusable module
+        # import ipdb; ipdb.set_trace()
+        try:
+            # json_req = request.json
+            json_req = udefault.jsonloads(request.args.keys()[0])
+        except HTTPException as ex:
+            abort(cls.__res['code'][500], message=ex)
+        skip_num = json_req['skipNum']
+        return cls.verify_init(skip_num=skip_num)
 
 
 class CreHandlerOne(Resource):

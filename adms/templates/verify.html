@@ -109,7 +109,16 @@ function verify(_element){
     });
 }
 
+
+/* set global variables in window */
+function setGlobalVal(){
+    // this value will as argument be delivered to background
+    window.skipNum = 0;
+}
+
 $(function(){
+    setGlobalVal();
+
     $("img.lazy").lazyload({
         load:function(){
             $('#container').BlocksIt({
@@ -121,9 +130,13 @@ $(function(){
     });
     $(window).scroll(function(){
         if ($(document).height() - $(this).scrollTop() - $(this).height() < 50){
+            console.log(window.skipNum);
+            window.skipNum += 6;
             $.ajax({
                 type: 'GET',
                 url: "{{ url_for('verify_scroll') }}",
+                data: JSON.stringify({'skipNum': window.skipNum}),
+                contentType: 'application/json;charset=UTF-8',
                 async: false,
                 success: function(result){
                     var items = result.result;

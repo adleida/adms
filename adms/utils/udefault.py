@@ -87,3 +87,14 @@ def decode_from_base64(base64_string):
     ''' decode to string from base64 '''
 
     return base64_string.decode('base64')
+
+
+def jsonloads(datastr):
+    ''' string to json(dict) '''
+            
+    try: 
+        datajson = json.loads(datastr)
+    except Exception as ex: 
+        logging.warn('[JSON_LOADS] {} --> {}'.format(ex, datastr))
+        return []
+    return datajson
