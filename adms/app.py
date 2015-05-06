@@ -26,7 +26,6 @@ api = Api(app, catch_all_404s=True)
 
 # TODO point location in the future
 parser = reqparse.RequestParser()
-parser.add_argument(__param['access_token'], type=str)
 parser.add_argument(__param['id'], type=str)
 parser.add_argument(__param['name'], type=str)
 parser.add_argument(__param['burl'], type=str)
