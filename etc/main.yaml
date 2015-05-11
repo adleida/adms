@@ -25,6 +25,7 @@ app:
     id: id
     name: name
     burl: burl
+    access_token: access_token
   url:
     dsp: /v1/dsp/
     # [ * NOTICE ]
@@ -63,7 +64,8 @@ model:
     media_id: media_id
     timestamp: timestamp
   media:
-    ref: ref
+    # this field dont use here, maybe after some consideration
+    # ref: ref
     approved: approved
     updated: updated
 
@@ -86,6 +88,7 @@ http:
     code:
       400: 400
       401: 401
+      404: 404
       408: 408
       417: 417
       500: 500
@@ -112,6 +115,8 @@ http:
       no401: you must provide token to us
       err401: please confirm your token, it's wrong now
 
+      404: Bad Request, please check your offering
+
       408: process request timeout
 
       dup417: this record already exists
@@ -127,8 +132,8 @@ http:
 
 path:
   schema:
-    dsp: ../res/dsp-add-schema.json
-    adm: ../res/adm-add-schema.json
+    dsp: ../res/schema/dsp-add-schema.json
+    adm: ../res/schema/adm-add-schema.json
   templates:
     upload: upload.html
     # upload: index.html
