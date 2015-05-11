@@ -57,12 +57,10 @@ class DspHandler(Resource):
         json_req.setdefault(self.__dsp['timestamp'], time.time())
         result = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
         if result:
-            if not result is True:
-                return {
-                           self.__fields['id']: str(result),
-                           self.__fields['message']: self.__res['desc']['dsp201']
-                       }
-            abort(self.__res['code'][417], message=self.__res['desc']['dup417'])
+            return {
+                       self.__fields['id']: str(result),
+                       self.__fields['message']: self.__res['desc']['dsp201']
+                   }
         # TODO when error occured that log is too long
         abort(self.__res['code'][500], message=self.__res['desc']['insert500'])
 

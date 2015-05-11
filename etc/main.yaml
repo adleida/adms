@@ -84,6 +84,8 @@ http:
   res:
     fields:
       id: id
+      code: code
+      request_data: request_data
       message: message
     code:
       400: 400
