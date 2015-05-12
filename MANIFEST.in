@@ -1,2 +1,2 @@
-include adms/res/*.json
-include adms/res/*.yaml
+include adms/res/*
+include adms/res/*

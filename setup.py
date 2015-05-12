@@ -38,7 +38,6 @@ setup(
     packages=['adms', 'adms.ext', 'adms.res'],
     package_data={'adms': data},
     include_package_data=True,
-    zip_safe=False,
     platforms='linux2',
     entry_points='''
         [console_scripts]
@@ -49,12 +48,17 @@ setup(
         'Flask-RESTful==0.3.2',
         'pyyaml==3.11',
         'pymongo==2.8',
-        # 'redis==2.10.3',
         'jsonschema==2.4.0',
         'requests==2.6.0',
         'flask-util-js==0.2.25',
         'toolz==0.7.1',
-        # 'pillow==2.7.0',
         'ipdb==0.8',
-    ],  
+    ],
+    classifiers=[
+        'Development Status :: 0 - Alpha',
+        'Environment :: Web Environment',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+    ]
 )
