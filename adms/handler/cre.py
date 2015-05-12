@@ -292,7 +292,7 @@ class CreHandler(Resource):
                     result = DaoGridFS.put(cls.__fsObj, binary, media)
                     if result:
                         total_result.setdefault('{}#{}'.format(filename, num), \
-                                '{}{}'.format(cls.__url['prompt'], sha1))
+                                '{}{}'.format(cls.__url['prompt'], result))
                     else:
                         abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
                 else:
