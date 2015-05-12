@@ -35,7 +35,7 @@ setup(
     author_email='noreply@adleida.com',
     description='a advertisement of manager service',
     long_description=__doc__,
-    packages=['adms', 'adms.ext'],
+    packages=['adms', 'adms.ext', 'adms.res'],
     package_data={'adms': data},
     include_package_data=True,
     zip_safe=False,
