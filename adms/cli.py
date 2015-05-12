@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# first of all, load config info
-from .config import Config
-Config.initialize()
-
 import logging
 import argparse
 import adms
-from adms.app import app
 
 
 def main():
     ''' set args to provide parameters to users '''
 
-    cli = Config.cfg['cli']
+    # first of all, load config info
+    from .config import Config
+    cli = Config.preset_config()
     help = cli['help']
     server = cli['server']
     log = cli['log']
@@ -28,12 +25,22 @@ def main():
     parser.add_argument('-d', '--debug', help=help['debug'], action='store_true', \
             default=False)
     parser.add_argument('-l', '--loglevel', help=help['loglevel'], \
-            default=server['loglevel']['default'], choices=server['loglevel']['choices'])
+            default=log['loglevel']['default'], choices=log['loglevel']['choices'])
+    parser.add_argument('-c', '--config', help=help['config'], \
+            default=None)
     args = parser.parse_args()
  
     loglev = args.loglevel.upper()
     logging.basicConfig(format=log['format'], \
             datefmt=log['datefmt'], level=loglev)
  
+    cfgpath = args.config
+    if not cfgpath:
+        logging.error('[PRESET_CONFIG] {}'.\
+                format('please show me your config path before all starting'))
+        exit()
+    Config.initialize(cfgpath=cfgpath)
+    from adms.app import app
+
     # entrypoint here
     app.run(host=args.bind, port=args.port, debug=args.debug)

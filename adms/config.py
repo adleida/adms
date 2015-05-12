@@ -12,9 +12,36 @@ from .dao.mongo.daogridfs import DaoGridFS
 class Config(object):
     ''' load all info from etc when starting webservice '''
 
+    @staticmethod
+    def preset_config():
+        cli = {
+            'help': {
+                'overview': 'use this command could decide to deploy your webserver on variety',
+                'bind': 'specify your server host bind',
+                'port': 'specify your server port open',
+                'version': 'display version of adms',
+                'debug': 'switch debug modern to scratch all log output',
+                'loglevel': 'adjust more then default level of ouput',
+                'config': 'specify config path'
+            },
+            'server': {
+                'prog': 'adms',
+                'bind': '0.0.0.0',
+                'port': 8008
+            },
+            'log': {
+                'format': '%(asctime)s %(levelname)s %(message)s',
+                'datefmt': '%m/%d/%Y %I:%M:%S %p',
+                'loglevel': {
+                    'default': 'warn',
+                    'choices': ['info', 'warn', 'error']
+                }
+            }
+        }
+        return cli
+
     @classmethod
-    def initialize(cls, cfgpath=(lambda: path.dirname\
-            (path.dirname(path.abspath(__file__)))+'/etc/main.yaml')()):
+    def initialize(cls, cfgpath):
         ''' classmethod to be done at first '''
 
         try:
