@@ -24,8 +24,7 @@ with open('adms/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1)))
 
-data_dir = 'adms/res'
-data = [os.path.join(data_dir, f) for f in os.listdir(data_dir)]
+data = ['adms/res/*/*']
  
 setup(
     name='adms',
