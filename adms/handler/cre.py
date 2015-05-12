@@ -279,13 +279,11 @@ class CreHandler(Resource):
                 if file and allowed_file(cls, file.filename):
                     filename = secure_filename(file.filename)
                     binary = file.read()
-                    _id = udefault.get_sha1(binary)
+                    sha1 = udefault.get_sha1(binary)
 
                     # define part of model here before saving to gridfs
                     media = {
-                        '_id': _id,
-                        'filename': _id,
-                        cls.__media['ref']: 0,
+                        'filename': sha1,
                         cls.__media['approved']: False
                     }
 
@@ -294,9 +292,11 @@ class CreHandler(Resource):
                     result = DaoGridFS.put(cls.__fsObj, binary, media)
                     if result:
                         total_result.setdefault('{}#{}'.format(filename, num), \
-                                '{}{}'.format(cls.__url['prompt'], _id))
-                    abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
-                abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
+                                '{}{}'.format(cls.__url['prompt'], sha1))
+                    else:
+                        abort(cls.__res['code'][500], message=cls.__res['desc']['upload500'])
+                else:
+                    abort(cls.__res['code'][400], message=cls.__res['desc']['postfix400'])
             else:
                 return jsonify(total_result)
         return render_template(cls.__cfg['path']['templates']['upload'])
