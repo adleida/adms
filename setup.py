@@ -46,7 +46,7 @@ setup(
         'Flask==0.10.1',
         'Flask-RESTful==0.3.2',
         'pyyaml==3.11',
-        'pymongo==2.8',
+        'pymongo==3.0.1',
         'jsonschema==2.4.0',
         'requests==2.6.0',
         'flask-util-js==0.2.25',
