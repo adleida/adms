@@ -151,6 +151,8 @@ db:
       # port: 27017
       host: 10.10.93.244
       port: 27017
+      user: adleida
+      pwd: python
       db: assist
       dsp_tab: dsp
       adm_tab: adm
@@ -169,6 +171,8 @@ db:
       # port: 27017
       host: 10.10.93.244
       port: 27017
+      user: adleida
+      pwd: python
       db: assist
       dbObj: null
     fields:

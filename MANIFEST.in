@@ -1,1 +1,3 @@
 recursive-include adms/res *
+recursive-include adms/templates *
+recursive-include adms/static *

@@ -34,7 +34,7 @@ setup(
     author_email='noreply@adleida.com',
     description='a advertisement of manager service',
     long_description=__doc__,
-    packages=['adms', 'adms.ext', 'adms.res'],
+    packages=['adms', 'adms.handler', 'adms.models', 'adms.utils', 'adms.dao'],
     package_data={'adms': data},
     include_package_data=True,
     platforms='linux2',

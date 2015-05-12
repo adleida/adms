@@ -15,6 +15,7 @@ class DaoMongo(object):
         try:
             client = pymongo.MongoClient(mongoinfo['host'], mongoinfo['port'])
             dbObj = client[mongoinfo['db']]
+            dbObj.authenticate(mongoinfo['user'], mongoinfo['pwd'], mechanism='MONGODB-CR')
         except Exception as ex:
             # TODO to exceptions.py in the future
             logging.error('[CONNECT_MONGO] {} >>> {}'.format(ex, mongoinfo))
