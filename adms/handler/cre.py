@@ -84,8 +84,6 @@ class CreHandler(Resource):
                 # if result is True, I'll continue save other adm info to mongo
                 media_id = DaoGridFS.put(self.__fsObj, binary, media)
                 if media_id:
-                    if media_id is True:
-                        media_id = _id
                     return rebase_post_adm(json_req, media_id, \
                             __dets, __defs, \
                             base64_flag=True, batch_flag=batch_flag)
