@@ -12,16 +12,30 @@ class Uploader(object):
     ''' simple script for uploading '''
 
     total_size = 0.0
+    tmp_imgpath = None
 
     def __init__(self):
         ''' initialize command arguments '''
 
         parser = argparse.ArgumentParser(description='adleida simple command line uploader')
-        parser.add_argument('-w', '--write', \
+        parser.add_argument('-o', '--output', \
                 help='decide to generate result.yaml from response', \
-                action='store_true', \
-                default=False)
+                action='store_true', default=False)
+        parser.add_argument('-t', '--test', \
+                help='test to mock local secne', \
+                action='store_true', default=False)
+        parser.add_argument('-s', '--substitute', \
+                help='consider whether script substitute value of field img', \
+                action='store_true', default=False)
         self.args = parser.parse_args()
+
+    @staticmethod
+    def preset_config(cls):
+        ''' set init confgi variety '''
+
+        cls._index_path = './index.yaml'
+        cls._local_address = 'http://127.0.0.1:8008/v1/adm/'
+        cls._remote_address = 'http://123.59.56.193:8008/v1/adm/'
 
     @staticmethod
     def preset_threshold(cls):
@@ -30,6 +44,18 @@ class Uploader(object):
         cls.__limit_width = 300
         cls.__limit_height = 300
         cls.__limit_bytes = 5
+
+    @classmethod
+    def load_index(cls):
+        ''' load index.yaml file '''
+
+        try:
+            with open(cls._index_path) as file:
+                json_req = yaml.load(file.read())
+        except:
+            print '\nthe file >>> [ index.yaml ] must exist\n'
+            exit()
+        return json_req
 
     @classmethod
     def check_images(cls, json_req):
@@ -112,11 +138,11 @@ class Uploader(object):
     def commence_upload(self, json_req):
         ''' after processing, start uploading now '''
 
-        def generate_result_from_response(json_res):
+        def generate_result_from_response(json_res, index_path, address, substitute_flag):
             ''' consider flag to make decision to generate result.yaml '''
 
             try:
-                with open('./index.yaml') as file:
+                with open(index_path) as file:
                     local_req = yaml.load(file.read())
             except:
                 print 'in order to generate result.yaml, the file >>> [ index.yaml ] must exist\n'
@@ -125,41 +151,46 @@ class Uploader(object):
             for index, per_res in enumerate(json_res):
                 per_res_id = per_res['id']
                 try:
-                    handler = requests.get('http://123.59.56.193:8008/v1/adm/{}'\
-                            .format(per_res_id))
+                    handler = requests.get('{}{}'\
+                            .format(address, per_res_id))
                 except Exception as ex:
                     print 'some unpredictable problem happend on internet >>> {}\n'.format(ex)
                     exit()
                 local_req[index]['id'] = str(per_res_id)
-                local_req[index]['data']['img'] = str(handler.json()['data']['img'])
-                local_req[index]['data']['text']
+                if substitute_flag:
+                    local_req[index]['data']['img'] = str(handler.json()['data']['img'])
             else:
                 with open('./result.yaml', 'w+') as file:
                     yaml.dump(local_req, file, default_flow_style=False, allow_unicode=True)
 
-        try:
-            handler = requests.post('http://123.59.56.193:8008/v1/adm/', \
-                    headers={'access_token':'d19a1398-ccf5-4c47-868c-a4abaf24e011'}, \
-                    json=json_req)
-        except Exception as ex:
-            print 'some unpredictable problem happend on internet >>> {}\n'.format(ex)
-            exit()
-        print 'finish uploading\n\n'
+        def rebase_common_action(json_req, index_path, address, output_flag, substitute_flag):
+            try:
+                handler = requests.post(address, \
+                        headers={'access_token':'d19a1398-ccf5-4c47-868c-a4abaf24e011'}, \
+                        json=json_req)
+            except Exception as ex:
+                print 'some unpredictable problem happend on internet >>> {}\n'.format(ex)
+                exit()
+            print 'finish uploading\n\n'
 
-        if self.args.write:
-            generate_result_from_response(handler.json())
+            if output_flag:
+                generate_result_from_response(handler.json(), index_path, address, substitute_flag)
+
+        if self.args.test:
+            rebase_common_action(json_req, \
+                    self._index_path, self._local_address, \
+                    self.args.output, self.args.substitute)
+        else:
+            rebase_common_action(json_req, \
+                    self._index_path, self._remote_address, \
+                    self.args.output, self.args.substitute)
 
     def main(self):
         ''' iterate content of request '''
 
+        self.preset_config(Uploader)
         self.preset_threshold(Uploader)
-
-        try:
-            with open('./index.yaml') as file:
-                json_req = yaml.load(file.read())
-        except:
-            print '\nthe file >>> [ index.yaml ] must exist\n'
-            exit()
+        json_req = self.load_index()
 
         self.check_images(json_req)
         confirm_val = raw_input('finish checking, upload now?\t[Y/n]')

@@ -1,63 +1,63 @@
 --- 
 - 
   data: 
-    img: "./images/1.jpg"
+    img: "http://exchange/11002"
     text: "品友app2 is very good"
   did: "110"
   id: "11010011"
   type: 1
 - 
   data: 
-    img: "./images/2.jpg"
+    img: "http://ad-exchange-server/image20101"
     text: 下载聚美优品App立马送代金券by品友
   did: "110"
   id: "11010010"
   type: 1
 - 
   data: 
-    img: "./images/3.png"
+    img: "http://ad-exchange-server/image20121"
     text: "国美-天天特价,快速送达,优惠GO到家 by 品友"
   did: "110"
   id: "11010012"
   type: 1
 - 
   data: 
-    img: "./images/4.jpg"
+    img: "http://ad-exchange-server/image21101"
     text: 分众传媒下载聚美优品App立马送代金券
   did: "111"
   id: "11110010"
   type: 1
 - 
   data: 
-    img: "./images/5.jpg"
+    img: "http://exchange/11102"
     text: "分众传媒app2 is very good"
   did: "111"
   id: "11110011"
   type: 1
 - 
   data: 
-    img: "./images/6.jpg"
+    img: "http://ad-exchange-server/image21121"
     text: "分众传媒 3C数码哪家强？易迅让你Duang Duang Duang"
   did: "111"
   id: "11110012"
   type: 1
 - 
   data: 
-    img: "./images/7.jpg"
+    img: "http://ad-exchange-server/image22101"
     text: "亿玛 下载聚美优品App立马送代金券"
   did: "112"
   id: "11210011"
   type: 1
 - 
   data: 
-    img: "./images/7.jpg"
+    img: "http://exchange/image22102"
     text: " 亿玛 花猫美食,最好的选择"
   did: "112"
   id: "11210011"
   type: 1
 - 
   data: 
-    img: "./images/10.jpg"
+    img: "http://ad-exchange-server/image22121"
     text: "亿玛 下载聚美优品App立马送代金券"
   did: "112"
   id: "11210012"

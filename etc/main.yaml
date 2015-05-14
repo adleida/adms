@@ -17,8 +17,8 @@ app:
     one_adm: /v1/adm/<id>
     # [ * NOTICE ]
     # if you change host, you must modify below url
-    # prompt: http://192.168.1.232:8008/v1/media/
-    prompt: http://123.59.56.193:8008/v1/media/
+    prompt: http://192.168.1.232:8008/v1/media/
+    # prompt: http://123.59.56.193:8008/v1/media/
     upload: /v1/media/upload
     # [ * NOTICE ]
     # if you change <id> in the future
@@ -51,6 +51,7 @@ model:
 http:
   req:
     token: d19a1398-ccf5-4c47-868c-a4abaf24e011
+    img_token: 1cb0cc4a72d5c82843c735c2d47448c856d01fa3
     allow_ext:
       - jpg
       - jpeg

@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 import time
 import logging
 from flask import request, make_response, render_template, jsonify
@@ -23,6 +24,7 @@ class CreHandler(Resource):
     __req = __cfg['http']['req']
     __res = __cfg['http']['res']
     __token = __req['token']
+    __img_token = __req['img_token']
     __fields = __res['fields']
 
     __adm_tabObj = __cfg['db']['mongo']['client']['adm_tabObj']
@@ -30,6 +32,11 @@ class CreHandler(Resource):
     __fsObj = __cfg['db']['gridfs']['client']['dbObj']
     __adm = __cfg['model']['adm']
     __media = __cfg['model']['media']
+
+    with open((lambda: os.path.dirname(os.path.dirname(\
+            os.path.abspath(__file__)))\
+            +'/res/images/approved')()) as file:
+        _err_img = file.read()
 
     _auth = ()
 
@@ -303,22 +310,34 @@ class CreHandler(Resource):
     def display(cls, id):
         ''' return get image via id '''
 
+        def rebase_common_reponse(binary):
+            response = make_response(binary)
+            response.headers['Content-Type'] = 'image'
+            return response
+
+        verify_flag = False
         # if you change _id from gridfs one day, please fix [ len(id) ] here
         if (not id) or (not len(id) == 24):
-            abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
+            if id.endswith(cls.__img_token):
+                id = id.split('+')[0]
+                verify_flag = True
+            else:
+                abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
         objId_val = udefault.get_objId(id)
         result = DaoMongo.find_one(cls.__media_tabObj, '_id', objId_val)
 
-        # if you debug advanced, commit below two lines
+        # display error image when approved is false
         if result[cls.__media['approved']] is False:
-            abort(cls.__res['code'][401], message=cls.__res['desc']['getnoapproved200'])
+            if verify_flag:
+                pass
+            # abort(cls.__res['code'][401], message=cls.__res['desc']['getnoapproved200'])
+            else:
+                return rebase_common_reponse(cls._err_img)
 
         binary = DaoGridFS.get(cls.__fsObj, objId_val)
         if binary is 2:
             abort(cls.__res['code'][500], message=cls.__res['desc']['getone500'])
-        response = make_response(binary)
-        response.headers['Content-Type'] = 'image'
-        return response
+        return rebase_common_reponse(binary)
 
     @classmethod
     def verify_init(cls, skip_num=None):
@@ -334,10 +353,13 @@ class CreHandler(Resource):
         if (result) and (not result is 2):
             for per in result:
                 per[cls.__adm['id']] = str(per.pop('_id'))
+                per[cls.__adm['data']][cls.__adm['img']] += \
+                        '{}{}'.format('+', cls.__img_token)
                 affirm = DaoMongo.find_one(cls.__media_tabObj, \
                         '_id', per[cls.__adm['media_id']])
                 if affirm is 2:
                     return render_template(cls.__cfg['path']['templates']['verify'])
+                per[cls.__adm['media_id']] = str(per.pop(cls.__adm['media_id']))
                 per.setdefault(cls.__media['approved'], affirm[cls.__media['approved']])
 
             if skip_num is None:
@@ -357,7 +379,7 @@ class CreHandler(Resource):
 
         # key [ id ] and [ value ] here mapping js script's variable
         value = False if 'True' in json_req['value'] else True
-        id = json_req['id']
+        id = udefault.get_objId(json_req['id'])
 
         result = DaoMongo.update_one(cls.__media_tabObj, \
                 '_id', id, { cls.__media['approved']: value })
@@ -374,7 +396,6 @@ class CreHandler(Resource):
         # maybe here will bring reusable module
         # import ipdb; ipdb.set_trace()
         try:
-            # json_req = request.json
             json_req = udefault.jsonloads(request.args.keys()[0])
         except HTTPException as ex:
             abort(cls.__res['code'][500], message=ex)
