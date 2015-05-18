@@ -16,7 +16,7 @@ class DaoGridFS(object):
         try:
             client = pymongo.MongoClient(gridfsinfo['host'], gridfsinfo['port'])
             dbObj = client[gridfsinfo['db']]
-            # dbObj.authenticate(gridfsinfo['user'], gridfsinfo['pwd'], mechanism='MONGODB-CR')
+            dbObj.authenticate(gridfsinfo['user'], gridfsinfo['pwd'], mechanism='MONGODB-CR')
             fsObj = GridFS(dbObj)
         except Exception as ex:
             logging.error('[CONNECT_GRIDFS] {} >>> {}'.format(ex, gridfsinfo))

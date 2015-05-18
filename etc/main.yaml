@@ -41,6 +41,7 @@ model:
     data: data
     img: img
     media_id: media_id
+    existence: existence
     timestamp: timestamp
   media:
     # this field dont use here, maybe after some consideration
@@ -156,9 +157,3 @@ db:
       dbObj: null
     fields:
       archer: ea
-  redis:
-    client:
-      host: 192.168.1.119
-      port: 6379
-      db: 2
-      dbObj: null

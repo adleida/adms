@@ -1,0 +1,54 @@
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c17145
+    text: 品友app2 is very good
+  did: '110'
+  id: 55597b911d41c83721c17147
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c17148
+    text: 下载聚美优品App立马送代金券by品友
+  did: '110'
+  id: 55597b911d41c83721c1714a
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c1714b
+    text: 国美-天天特价,快速送达,优惠GO到家 by 品友
+  did: '110'
+  id: 55597b911d41c83721c1714d
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c1714e
+    text: 分众传媒下载聚美优品App立马送代金券
+  did: '111'
+  id: 55597b911d41c83721c17150
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c17151
+    text: 分众传媒app2 is very good
+  did: '111'
+  id: 55597b911d41c83721c17153
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c17154
+    text: 分众传媒 3C数码哪家强？易迅让你Duang Duang Duang
+  did: '111'
+  id: 55597b911d41c83721c17156
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c17157
+    text: 亿玛 下载聚美优品App立马送代金券
+  did: '112'
+  id: 55597b911d41c83721c17159
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c1715a
+    text: ' 亿玛 花猫美食,最好的选择'
+  did: '112'
+  id: 55597b911d41c83721c1715c
+  type: 1
+- data:
+    img: http://192.168.1.232:8008/v1/media/55597b911d41c83721c1715d
+    text: 亿玛 下载聚美优品App立马送代金券
+  did: '112'
+  id: 55597b911d41c83721c1715f
+  type: 1

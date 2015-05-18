@@ -12,7 +12,7 @@ class Uploader(object):
     ''' simple script for uploading '''
 
     total_size = 0.0
-    tmp_imgpath = None
+    tmp_imgpath = []
 
     def __init__(self):
         ''' initialize command arguments '''
@@ -26,6 +26,9 @@ class Uploader(object):
                 action='store_true', default=False)
         parser.add_argument('-s', '--substitute', \
                 help='consider whether script substitute value of field img', \
+                action='store_true', default=False)
+        parser.add_argument('-m', '--amend', \
+                help='with help of this uploader that change field img instead of check path', \
                 action='store_true', default=False)
         self.args = parser.parse_args()
 
@@ -58,7 +61,7 @@ class Uploader(object):
         return json_req
 
     @classmethod
-    def check_images(cls, json_req):
+    def check_images(cls, json_req, args):
         ''' check image's validation '''
 
         def check_path(img_path):
@@ -117,7 +120,9 @@ class Uploader(object):
         print '\nstart checking validation of images ..\n'
         for per_req in json_req:
             img_path = per_req['data']['img']
-            check_path(img_path)
+            # TODO below line may cause more overload
+            if not args.amend:
+                check_path(img_path)
             collect_bytes(img_path, cls)
 
             img = read_image(img_path, cls)
@@ -128,6 +133,7 @@ class Uploader(object):
     def process_request_info(self, json_req):
         ''' after checking all images, start process request info '''
 
+        # TODO below line may cause more overload
         for per_req in json_req:
             with open(per_req['data']['img']) as file:
                 base64_val = file.read().encode('base64')
@@ -157,6 +163,8 @@ class Uploader(object):
                     print 'some unpredictable problem happend on internet >>> {}\n'.format(ex)
                     exit()
                 local_req[index]['id'] = str(per_res_id)
+
+                # TODO below line may cause more overload
                 if substitute_flag:
                     local_req[index]['data']['img'] = str(handler.json()['data']['img'])
             else:
@@ -192,7 +200,7 @@ class Uploader(object):
         self.preset_threshold(Uploader)
         json_req = self.load_index()
 
-        self.check_images(json_req)
+        self.check_images(json_req, self.args)
         confirm_val = raw_input('finish checking, upload now?\t[Y/n]')
         if confirm_val in ['n', 'N']:
             print 'abort ..\n'

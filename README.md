@@ -26,7 +26,7 @@
 
     git clone git@192.168.1.111:adms.git
     cd adms
-    ./bin/core
+    ./bin/core -c [path/to/main.yaml]
 
 ---
 
@@ -87,3 +87,16 @@
 
     pytest | tox
 
+---
+
+###远端部署
+
+1. 项目若需要打包运行
+
+    make pack
+
+2. 打包前需要注意修改 adms/dao/mongo/{daomongo.py, daogridfs.py} 启用连接数据库认证功能 本地不需要
+
+3. 上传打包项目
+
+    make upload

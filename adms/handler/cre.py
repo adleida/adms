@@ -75,15 +75,11 @@ class CreHandler(Resource):
                 except HTTPException as ex:
                     if batch_flag:
                         return common_error_response(__defs, __defs['__res']['code'][500], \
-                                ex.message, \
-                                json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
+                                ex.message, json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
                     abort(__defs['__res']['code'][500], message=ex)
 
                 sha1 = udefault.get_sha1(binary)
                 media = {
-                    # consider some reason, I dont need use ref here
-                    # '_id': _id,
-                    # self.__media['ref']: 0,
                     'filename': sha1,
                     __defs['__media']['approved']: False
                 }
@@ -110,52 +106,46 @@ class CreHandler(Resource):
         ##### accept base64 condition #####
         # check the [ img ] field include string which start with [ http:// ] or not
         # and this action occured after checking jsonschema
-        # process base64 encoded here!
+        # process base64 encoded here
         def rebase_post_adm(json_req, media_id, __dets, __defs, base64_flag=False, batch_flag=False):
             ''' here I need rebase post action trace and provide for muliti one '''
 
+            # patchwork model >>> [ adm ]
+            json_req.setdefault(__defs['__adm']['existence'], True)
             json_req.setdefault(__defs['__adm']['media_id'], media_id)
             json_req.setdefault(__defs['__adm']['timestamp'], time.time())
             if base64_flag:
                 json_req[__defs['__adm']['data']][__defs['__adm']['img']] = \
                         '{}{}'.format(__defs['__url']['prompt'], media_id)
-            result = DaoMongo.insert_one(__dets['__adm_tabObj'], json_req)
-            if result:
+
+            adm_insert_one_result = DaoMongo.insert_one(__dets['__adm_tabObj'], json_req)
+            if adm_insert_one_result:
                 update_info = {
                     __defs['__media']['updated']: time.time()
                 }
 
-                # this field may not cause more benefit
-                # inc_info = {
-                #     __defs['__media']['ref']: 1
-                # }
-                # affirm = DaoMongo.update_one_sync(__dets['__media_tabObj'], \
-                #         '_id', media_id, \
-                #         update_info, inc_info)
-                
-                affirm = DaoMongo.update_one(__dets['__media_tabObj'], \
+                media_update_one_result = DaoMongo.update_one(__dets['__media_tabObj'], \
                         '_id', media_id, update_info)
-                if not affirm is True:
+                if not media_update_one_result is True:
                     if batch_flag:
                         json_req.pop(__defs['__adm']['media_id'])
                         json_req.pop(__defs['__adm']['timestamp'])
                         if base64_flag:
                             json_req[__defs['__adm']['data']].pop(__defs['__adm']['img'])
                         return common_error_response(__defs, __defs['__res']['code'][500], \
-                                __defs['__res']['desc']['sync500'], \
-                                json_req)
-                    abort(__defs['__res']['code'][500], \
-                            message=__defs['__res']['desc']['sync500'])
+                                __defs['__res']['desc']['sync500'], json_req)
+                    # abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['sync500'])
+                    abort(__defs['__res']['code'][500])
                 return {
-                           __defs['__fields']['id']: str(result),
+                           __defs['__fields']['id']: str(adm_insert_one_result),
                            __defs['__fields']['message']: __defs['__res']['desc']['adm201']
                        }
-            # TODO when error occured that log is too long
+
             if batch_flag:
                 return common_error_response(__defs, __defs['__res']['code'][500], \
                         __defs['__res']['desc']['insert500'], \
                         json_req)
-            abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['insert500'])
+            abort(__defs['__res']['code'][500])
 
         # here this API method could begin.
         self._auth = _assert, _code = Authentication.verify(self.__token, \
@@ -203,33 +193,23 @@ class CreHandler(Resource):
         if _code: return self._auth
 
         args = self.parser.parse_args()
+        id_val = args[self.__param['id']]
+        if not id_val:
+            abort(self.__res['code'][400])
         try:
-            id_val = udefault.get_objId(args[self.__param['id']])
+            id_val = udefault.get_objId(id_val)
         except:
-            abort(self.__res['code'][400], message=self.__res['desc']['del400'])
+            abort(self.__res['code'][400])
 
-        # the same reason to below, I commit some lines here
-        # find_res = DaoMongo.find_one(self.__adm_tabObj, '_id', id_val)
-        # if find_res:
-        #     if find_res is 2:
-        #         abort(self.__res['code'][500], message=self.__res['desc']['getone500'])
-        #     media_id = find_res[self.__adm['media_id']]
-        # return self.__res['desc']['delno200']
-
-        result = DaoMongo.remove_one(self.__adm_tabObj, '_id', id_val)
-        if result:
-            if result is 2:
-                abort(self.__res['code'][500], message=self.__res['desc']['del500'])
-
-            # maybe I dont need to minus 1 fo field ref
-            # inc_info = {
-            #     self.__media['ref']: -1
-            # }
-            # affirm_inc = DaoMongo.update_one_inc(self.__media_tabObj, '_id', media_id, inc_info)
-            # if not affirm_inc is True:
-            #     abort(self.__res['code'][500], message=self.__res['desc']['sync500'])
-            return self.__res['desc']['del200']
-        return self.__res['desc']['delno200']
+        # set field [ existence ] >>> False
+        update_info = {
+            self.__adm['existence']: False
+        }
+        update_one_result = DaoMongo.update_one(self.__adm_tabObj, \
+                '_id', id_val, update_info)
+        if update_one_result is 2:
+            abort(self.__res['code'][500])
+        return self.__res['desc']['del200']
 
     def get(self):
         ''' query from advertisers' media info '''
@@ -242,15 +222,17 @@ class CreHandler(Resource):
         result = DaoMongo.find_all(self.__adm_tabObj)
         if result:
             if result is 2:
-                abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
+                # abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
+                abort(self.__res['code']['500'])
             real_res = []
             for per in result:
                 per.pop(self.__adm['media_id'])
                 per.pop(self.__adm['timestamp'])
+                per.pop(self.__adm['existence'])
                 per[self.__adm['id']] = str(per.pop('_id'))
                 real_res.append(per)
             return real_res
-        return self.__res['desc']['getall200'], self.__res['code'][404]
+        abort(self.__res['code'][404])
 
     @classmethod
     def upload(cls, request):
@@ -322,7 +304,7 @@ class CreHandler(Resource):
                 id = id.split('+')[0]
                 verify_flag = True
             else:
-                abort(cls.__res['code'][400], message=cls.__res['desc']['getone400'])
+                abort(cls.__res['code'][400])
         objId_val = udefault.get_objId(id)
         result = DaoMongo.find_one(cls.__media_tabObj, '_id', objId_val)
 
@@ -330,13 +312,13 @@ class CreHandler(Resource):
         if result[cls.__media['approved']] is False:
             if verify_flag:
                 pass
-            # abort(cls.__res['code'][401], message=cls.__res['desc']['getnoapproved200'])
             else:
                 return rebase_common_reponse(cls._err_img)
 
         binary = DaoGridFS.get(cls.__fsObj, objId_val)
         if binary is 2:
-            abort(cls.__res['code'][500], message=cls.__res['desc']['getone500'])
+            # abort(cls.__res['code'][500], message=cls.__res['desc']['getone500'])
+            abort(cls.__res['code'][500])
         return rebase_common_reponse(binary)
 
     @classmethod
@@ -439,6 +421,7 @@ class CreHandlerOne(Resource):
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
             result.pop(self.__adm['media_id'])
             result.pop(self.__adm['timestamp'])
+            result.pop(self.__adm['existence'])
             result[self.__adm['id']] = str(result.pop('_id'))
             return result
         return self.__res['desc']['getone200']
