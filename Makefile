@@ -10,8 +10,12 @@ run:
 	python adms/cli.py -c etc/main.yaml
 
 prep:
-	cat -n ./adms/dao/mongo/daomongo.py | sed -i '18s/# //g'
-	cat -n ./adms/dao/mongo/daogridfs.py | sed -i '19s/# //g'
+	sed -i '18s/# //g' ./adms/dao/mongo/daomongo.py
+	sed -i '19s/# //g' ./adms/dao/mongo/daogridfs.py
+
+local:
+	sed -i "18s/dbObj/# dbObj/g" ./adms/dao/mongo/daomongo.py
+	sed -i "19s/dbObj/# dbObj/g" ./adms/dao/mongo/daogridfs.py
 
 pack:
 	python setup.py sdist --formats=gztar
