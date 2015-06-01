@@ -148,6 +148,7 @@ class DspHandler(Resource):
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
             real_res = []
             for per in result:
+                per.pop(self.__dsp['existence'])
                 per.pop(self.__dsp['created'])
                 per.pop(self.__dsp['updated'])
                 per[self.__dsp['id']] = str(per.pop('_id'))
@@ -191,6 +192,7 @@ class DspHandlerOne(Resource):
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
             if not result[self.__dsp['existence']]:
                 abort(self.__res['code'][404])
+            result.pop(self.__dsp['existence'])
             result.pop(self.__dsp['created'])
             result.pop(self.__dsp['updated'])
             result[self.__dsp['id']] = str(result.pop('_id'))

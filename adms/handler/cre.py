@@ -118,12 +118,16 @@ class CreHandler(Resource):
                 abort(__defs['__res']['code'][400], message=ex.message)
 
             # check correctly existence of id
-            objId = udefault.get_objId(json_req[__defs['__adm']['id']])
+            try:
+                objId = udefault.get_objId(json_req[__defs['__adm']['id']])
+            except:
+                abort(__defs['__res']['code'][400])
+
             find_one_result = DaoMongo.find_one(__dets['__dsp_tabObj'], '_id', objId)
             if find_one_result:
                 if find_one_result is 2:
                     abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
-                if not result[self.__adm['existence']]:
+                if not find_one_result[self.__adm['existence']]:
                     abort(self.__res['code'][400])
                 pass
             else:
@@ -252,9 +256,9 @@ class CreHandler(Resource):
             real_res = []
             for per in result:
                 per.pop(self.__adm['media_id'])
+                per.pop(self.__adm['existence'])
                 per.pop(self.__adm['created'])
                 per.pop(self.__adm['updated'])
-                per.pop(self.__adm['existence'])
                 per[self.__adm['id']] = str(per.pop('_id'))
                 real_res.append(per)
             return real_res

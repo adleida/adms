@@ -218,10 +218,10 @@ class Uploader(object):
 
 if __name__ == '__main__':
     updr = Uploader()
-    updr.main()
-    # try:
-    #     updr.main()
-    # except:
-    #     print '\nis it correctly server address? >>> {}\n'.format(updr._local_address)
-    #     print 'abort ..\n'
-    #     exit()
+    # updr.main()
+    try:
+        updr.main()
+    except:
+        print '\nerror occured .. >>> {}\n'.format(updr._local_address)
+        print 'abort ..\n'
+        exit()
