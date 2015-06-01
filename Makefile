@@ -1,7 +1,8 @@
 .PHONY: test, pack, upload
 
 PKG = $(shell python setup.py --fullname).tar.gz
-HOST = uc
+HOST_UC = uc
+HOST_118 = 118
 
 test:
 	py.test
@@ -20,8 +21,14 @@ local:
 pack:
 	python setup.py sdist --formats=gztar
 
-upload:
-	scp dist/$(PKG) $(HOST):adms/;
+upload_uc:
+	scp dist/$(PKG) $(HOST_UC):adms/;
+
+upload_118:
+	scp dist/$(PKG) $(HOST_118):adms/;
+
+upload_etc_118:
+	scp etc/main.yaml $(HOST_118):adms/;
 
 clean:
 	rm -rf adms.egg-info .tox dist

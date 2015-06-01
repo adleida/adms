@@ -27,6 +27,7 @@ class CreHandler(Resource):
     __img_token = __req['img_token']
     __fields = __res['fields']
 
+    __dsp_tabObj = __cfg['db']['mongo']['client']['dsp_tabObj']
     __adm_tabObj = __cfg['db']['mongo']['client']['adm_tabObj']
     __media_tabObj = __cfg['db']['mongo']['client']['media_tabObj']
     __fsObj = __cfg['db']['gridfs']['client']['dbObj']
@@ -57,52 +58,6 @@ class CreHandler(Resource):
                        __defs['__fields']['request_data']: data
                    }
 
-        def commence_post_adm(json_req, schemapath, __dets, __defs, batch_flag=False):
-            ''' origin of post adm action '''
-
-            ok, ex = udefault.check_schema(json_req, schemapath)
-            if not ok:
-                if batch_flag:
-                    return common_error_response(__defs, __defs['__res']['code'][400], \
-                            ex.message, \
-                            json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
-                abort(__defs['__res']['code'][400], message=ex.message)
-
-            img = json_req[__defs['__adm']['data']][__defs['__adm']['img']]
-            if not img.startswith('http://'):
-                try:
-                    binary = udefault.decode_from_base64(img)
-                except HTTPException as ex:
-                    if batch_flag:
-                        return common_error_response(__defs, __defs['__res']['code'][500], \
-                                ex.message, json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
-                    abort(__defs['__res']['code'][500], message=ex)
-
-                sha1 = udefault.get_sha1(binary)
-                media = {
-                    'filename': sha1,
-                    __defs['__media']['approved']: False
-                }
-
-                # if result is True, I'll continue save other adm info to mongo
-                media_id = DaoGridFS.put(self.__fsObj, binary, media)
-                if media_id:
-                    return rebase_post_adm(json_req, media_id, \
-                            __dets, __defs, \
-                            base64_flag=True, batch_flag=batch_flag)
-                if batch_flag:
-                    return common_error_response(__defs, __defs['__res']['code'][500], \
-                            __defs['__res']['desc']['upload500'], \
-                            json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
-                abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['upload500'])
-
-            ##### accept url condition #####
-            # first of all here I gather all fields which I need
-            media_id = img.rsplit('/', 1)[1]
-            return rebase_post_adm(json_req, media_id, \
-                    __dets, __defs, \
-                    batch_flag=batch_flag)
-
         ##### accept base64 condition #####
         # check the [ img ] field include string which start with [ http:// ] or not
         # and this action occured after checking jsonschema
@@ -113,7 +68,9 @@ class CreHandler(Resource):
             # patchwork model >>> [ adm ]
             json_req.setdefault(__defs['__adm']['existence'], True)
             json_req.setdefault(__defs['__adm']['media_id'], media_id)
-            json_req.setdefault(__defs['__adm']['timestamp'], time.time())
+            json_req.setdefault(__defs['__adm']['created'], time.time())
+            json_req.setdefault(__defs['__adm']['updated'], time.time())
+
             if base64_flag:
                 json_req[__defs['__adm']['data']][__defs['__adm']['img']] = \
                         '{}{}'.format(__defs['__url']['prompt'], media_id)
@@ -123,13 +80,13 @@ class CreHandler(Resource):
                 update_info = {
                     __defs['__media']['updated']: time.time()
                 }
-
                 media_update_one_result = DaoMongo.update_one(__dets['__media_tabObj'], \
                         '_id', media_id, update_info)
                 if not media_update_one_result is True:
                     if batch_flag:
                         json_req.pop(__defs['__adm']['media_id'])
-                        json_req.pop(__defs['__adm']['timestamp'])
+                        json_req.pop(__defs['__adm']['created'])
+                        json_req.pop(__defs['__adm']['updated'])
                         if base64_flag:
                             json_req[__defs['__adm']['data']].pop(__defs['__adm']['img'])
                         return common_error_response(__defs, __defs['__res']['code'][500], \
@@ -142,15 +99,81 @@ class CreHandler(Resource):
                        }
 
             if batch_flag:
-                return common_error_response(__defs, __defs['__res']['code'][500], \
+                return common_error_response(__defs, \
+                        __defs['__res']['code'][500], \
                         __defs['__res']['desc']['insert500'], \
                         json_req)
             abort(__defs['__res']['code'][500])
 
-        # here this API method could begin.
-        self._auth = _assert, _code = Authentication.verify(self.__token, \
-                request.headers.get(self.__param['access_token']), self.__res)
-        if _code: return self._auth
+        def commence_post_adm(json_req, schemapath, __dets, __defs, batch_flag=False):
+            ''' origin of post adm action '''
+
+            ok, ex = udefault.check_schema(json_req, schemapath)
+            if not ok:
+                if batch_flag:
+                    return common_error_response(__defs, \
+                            __defs['__res']['code'][400], \
+                            ex.message, \
+                            json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
+                abort(__defs['__res']['code'][400], message=ex.message)
+
+            # check correctly existence of id
+            objId = udefault.get_objId(json_req[__defs['__adm']['id']])
+            find_one_result = DaoMongo.find_one(__dets['__dsp_tabObj'], '_id', objId)
+            if find_one_result:
+                if find_one_result is 2:
+                    abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
+                if not result[self.__adm['existence']]:
+                    abort(self.__res['code'][400])
+                pass
+            else:
+                abort(self.__res['code'][400])
+
+            img = json_req[__defs['__adm']['data']][__defs['__adm']['img']]
+
+            ##### accept base64 condition #####
+            if not img.startswith('http://'):
+                try:
+                    binary = udefault.decode_from_base64(img)
+                except HTTPException as ex:
+                    if batch_flag:
+                        return common_error_response(__defs, \
+                                __defs['__res']['code'][500], \
+                                ex.message, \
+                                json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
+                    abort(__defs['__res']['code'][500], message=ex)
+
+                sha1 = udefault.get_sha1(binary)
+                media = {
+                    'filename': sha1,
+                    __defs['__media']['approved']: False
+                }
+
+                # if result is True, I'll continue save other adm info to mongo
+                media_id = DaoGridFS.put(self.__fsObj, binary, media)
+                if media_id:
+                    return rebase_post_adm(json_req, \
+                            media_id, \
+                            __dets, __defs, \
+                            base64_flag=True, batch_flag=batch_flag)
+                if batch_flag:
+                    return common_error_response(__defs, \
+                            __defs['__res']['code'][500], \
+                            __defs['__res']['desc']['upload500'], \
+                            json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
+                abort(__defs['__res']['code'][500], message=__defs['__res']['desc']['upload500'])
+
+            ##### accept url condition #####
+            media_id = img.rsplit('/', 1)[1]
+            return rebase_post_adm(json_req, \
+                    media_id, \
+                    __dets, __defs, \
+                    batch_flag=batch_flag)
+
+        # here this API post method could begin.
+        # self._auth = _assert, _code = Authentication.verify(self.__token, \
+        #         request.headers.get(self.__param['access_token']), self.__res)
+        # if _code: return self._auth
 
         # collect some depend fields
         schemapath = Config.cfg['path']['schema']['adm']
@@ -163,6 +186,7 @@ class CreHandler(Resource):
         }
         # collect some depend tables objects
         __dets = {
+            '__dsp_tabObj': self.__dsp_tabObj,
             '__adm_tabObj': self.__adm_tabObj,
             '__media_tabObj': self.__media_tabObj
         }
@@ -203,7 +227,8 @@ class CreHandler(Resource):
 
         # set field [ existence ] >>> False
         update_info = {
-            self.__adm['existence']: False
+            self.__adm['existence']: False,
+            self.__adm['updated']: time.time()
         }
         update_one_result = DaoMongo.update_one(self.__adm_tabObj, \
                 '_id', id_val, update_info)
@@ -227,7 +252,8 @@ class CreHandler(Resource):
             real_res = []
             for per in result:
                 per.pop(self.__adm['media_id'])
-                per.pop(self.__adm['timestamp'])
+                per.pop(self.__adm['created'])
+                per.pop(self.__adm['updated'])
                 per.pop(self.__adm['existence'])
                 per[self.__adm['id']] = str(per.pop('_id'))
                 real_res.append(per)
@@ -243,8 +269,6 @@ class CreHandler(Resource):
 
         if request.method == 'POST':
 
-            # TODO below commited code may allow all people upload
-            # TODO if one day use auth, you could discard page and switch uncommit
             # cls._auth = _assert, _code = Authentication.verify(cls.__token, \
             #         request.headers.get(cls.__param['access_token']), cls.__res)
             # if _code: return cls._auth
@@ -313,11 +337,12 @@ class CreHandler(Resource):
             if verify_flag:
                 pass
             else:
-                return rebase_common_reponse(cls._err_img)
+                # error img may not be allowed
+                # return rebase_common_reponse(cls._err_img)
+                abort(cls.__res['code'][401])
 
         binary = DaoGridFS.get(cls.__fsObj, objId_val)
         if binary is 2:
-            # abort(cls.__res['code'][500], message=cls.__res['desc']['getone500'])
             abort(cls.__res['code'][500])
         return rebase_common_reponse(binary)
 
@@ -406,7 +431,6 @@ class CreHandlerOne(Resource):
     def get(self, id):
         ''' query one adm info from adm's records '''
 
-        # TODO same reason of up
         # self._auth = _assert, _code = Authentication.verify(self.__token, \
         #         request.headers.get(self.__param['access_token']), self.__res)
         # if _code: return self._auth
@@ -419,8 +443,11 @@ class CreHandlerOne(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
+            if not result[self.__adm['existence']]:
+                abort(self.__res['code'][404])
             result.pop(self.__adm['media_id'])
-            result.pop(self.__adm['timestamp'])
+            result.pop(self.__adm['created'])
+            result.pop(self.__adm['updated'])
             result.pop(self.__adm['existence'])
             result[self.__adm['id']] = str(result.pop('_id'))
             return result

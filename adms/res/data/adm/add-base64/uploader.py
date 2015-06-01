@@ -38,6 +38,7 @@ class Uploader(object):
 
         cls._index_path = './index.yaml'
         cls._local_address = 'http://127.0.0.1:8008/v1/adm/'
+        # cls._local_address = 'http://192.168.1.118:8008/v1/adm/'
         cls._remote_address = 'http://123.59.56.193:8008/v1/adm/'
 
     @staticmethod
@@ -218,3 +219,9 @@ class Uploader(object):
 if __name__ == '__main__':
     updr = Uploader()
     updr.main()
+    # try:
+    #     updr.main()
+    # except:
+    #     print '\nis it correctly server address? >>> {}\n'.format(updr._local_address)
+    #     print 'abort ..\n'
+    #     exit()

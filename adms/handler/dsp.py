@@ -33,15 +33,13 @@ class DspHandler(Resource):
         cls.parser = parser
         return cls
 
-    # TODO I'll implements multiply insert in the future
     def post(self):
         ''' create advertisers' info '''
 
-        self._auth = _assert, _code = Authentication.verify(self.__token, \
-                request.headers.get(self.__param['access_token']), self.__res)
-        if _code: return self._auth
+        # self._auth = _assert, _code = Authentication.verify(self.__token, \
+        #         request.headers.get(self.__param['access_token']), self.__res)
+        # if _code: return self._auth
 
-        # get data from request object handler and put it to memory in model class
         try:
             json_req = request.get_json()
         except HTTPException as ex:
@@ -54,7 +52,9 @@ class DspHandler(Resource):
             abort(self.__res['code'][400], message=ex.message)
 
         # insert data here in mongo
-        json_req.setdefault(self.__dsp['timestamp'], time.time())
+        json_req.setdefault(self.__dsp['existence'], True)
+        json_req.setdefault(self.__dsp['created'], time.time())
+        json_req.setdefault(self.__dsp['updated'], time.time())
         result = DaoMongo.insert_one(self.__dsp_tabObj, json_req)
         if result:
             return {
@@ -76,12 +76,24 @@ class DspHandler(Resource):
             id_val = udefault.get_objId(args[self.__param['id']])
         except:
             abort(self.__res['code'][400], message=self.__res['desc']['del400'])
-        result = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
-        if result:
-            if result is 2:
-                abort(self.__res['code'][500], message=self.__res['desc']['del500'])
-            return self.__res['desc']['del200']
-        return self.__res['desc']['delno200']
+
+        # maybe ..  it's owned by me now
+        update_info = {
+            self.__dsp['existence']: False,
+            self.__dsp['updated']: time.time()
+        }
+        update_one_result = DaoMongo.update_one(self.__dsp_tabObj, \
+                '_id', id_val, update_info)
+        if update_one_result is 2:
+            abort(self.__res['code'][500])
+        return self.__res['desc']['del200']
+
+        # result = DaoMongo.remove_one(self.__dsp_tabObj, '_id', id_val)
+        # if result:
+        #     if result is 2:
+        #         abort(self.__res['code'][500], message=self.__res['desc']['del500'])
+        #     return self.__res['desc']['del200']
+        # return self.__res['desc']['delno200']
 
     def put(self):
         ''' modify advertisers' info '''
@@ -100,13 +112,19 @@ class DspHandler(Resource):
         if name_val and burl_val:
             update_info = {
                 self.__dsp['name']: name_val,
-                self.__dsp['burl']: burl_val }
+                self.__dsp['burl']: burl_val ,
+                self.__dsp['updated']: time.time()
+            }
         elif name_val:
             update_info = {
-                self.__dsp['name']: name_val }
+                self.__dsp['name']: name_val,
+                self.__dsp['updated']: time.time()
+            }
         elif burl_val:
             update_info = {
-                self.__dsp['burl']: burl_val }
+                self.__dsp['burl']: burl_val,
+                self.__dsp['updated']: time.time()
+            }
         else:
             abort(self.__res['code'][400], message=self.__res['desc']['update400'])
 
@@ -120,9 +138,9 @@ class DspHandler(Resource):
     def get(self):
         ''' query all from advertisers' info '''
 
-        self._auth = _assert, _code = Authentication.verify(self.__token, \
-                request.headers.get(self.__param['access_token']), self.__res)
-        if _code: return self._auth
+        # self._auth = _assert, _code = Authentication.verify(self.__token, \
+        #         request.headers.get(self.__param['access_token']), self.__res)
+        # if _code: return self._auth
 
         result = DaoMongo.find_all(self.__dsp_tabObj)
         if result:
@@ -130,7 +148,8 @@ class DspHandler(Resource):
                 abort(self.__res['code']['500'], message=self.__res['desc']['getall500'])
             real_res = []
             for per in result:
-                per.pop(self.__dsp['timestamp'])
+                per.pop(self.__dsp['created'])
+                per.pop(self.__dsp['updated'])
                 per[self.__dsp['id']] = str(per.pop('_id'))
                 real_res.append(per)
             return real_res
@@ -158,9 +177,9 @@ class DspHandlerOne(Resource):
     def get(self, id):
         ''' query one dsp info from advertisers' records '''
 
-        self._auth = _assert, _code = Authentication.verify(self.__token, \
-                request.headers.get(self.__param['access_token']), self.__res)
-        if _code: return self._auth
+        # self._auth = _assert, _code = Authentication.verify(self.__token, \
+        #         request.headers.get(self.__param['access_token']), self.__res)
+        # if _code: return self._auth
 
         try:
             id = udefault.get_objId(id)
@@ -170,7 +189,10 @@ class DspHandlerOne(Resource):
         if result:
             if result is 2:
                 abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
-            result.pop(self.__dsp['timestamp'])
+            if not result[self.__dsp['existence']]:
+                abort(self.__res['code'][404])
+            result.pop(self.__dsp['created'])
+            result.pop(self.__dsp['updated'])
             result[self.__dsp['id']] = str(result.pop('_id'))
             return result
         return self.__res['desc']['getone200']
