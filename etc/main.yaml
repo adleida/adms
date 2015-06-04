@@ -40,6 +40,7 @@ model:
     updated: updated
   adm:
     id: id
+    did: did
     data: data
     img: img
     media_id: media_id

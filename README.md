@@ -66,14 +66,15 @@
             img: img (changed by adx)
 
         media_id: media_id
-        timestamp: timestamp
+        created: created
+        updated: updated
 
     media:
         _id: _id (sha1)
         filename: _id (sha1)
         approved: approved
-        ref: ref
-        timestamp: timestamp
+        created: created
+        updated: updated
 
 ---
 

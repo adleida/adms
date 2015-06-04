@@ -39,7 +39,8 @@ class Uploader(object):
         cls._index_path = './index.yaml'
         cls._local_address = 'http://127.0.0.1:8008/v1/adm/'
         # cls._local_address = 'http://192.168.1.118:8008/v1/adm/'
-        cls._remote_address = 'http://123.59.56.193:8008/v1/adm/'
+        # cls._remote_address = 'http://123.59.56.193:8008/v1/adm/'
+        cls._remote_address = 'http://123.59.43.175:8008/v1/adm/'
 
     @staticmethod
     def preset_threshold(cls):
@@ -156,7 +157,11 @@ class Uploader(object):
                 exit()
 
             for index, per_res in enumerate(json_res):
-                per_res_id = per_res['id']
+                try:
+                    per_res_id = per_res['id']
+                except:
+                    print '\n>>> {}\n'.format(json_res)
+                    exit()
                 try:
                     handler = requests.get('{}{}'\
                             .format(address, per_res_id))
@@ -218,10 +223,10 @@ class Uploader(object):
 
 if __name__ == '__main__':
     updr = Uploader()
-    # updr.main()
-    try:
-        updr.main()
-    except:
-        print '\nerror occured .. >>> {}\n'.format(updr._local_address)
-        print 'abort ..\n'
-        exit()
+    updr.main()
+    # try:
+    #     updr.main()
+    # except:
+    #     print '\nerror occured ..\n'
+    #     print 'abort ..\n'
+    #     exit()

@@ -117,13 +117,13 @@ class CreHandler(Resource):
                             json_req[__defs['__adm']['data']].pop(__defs['__adm']['img']))
                 abort(__defs['__res']['code'][400], message=ex.message)
 
-            # check correctly existence of id
+            # check correctly existence of adm['did'] >> dsp['id']
             try:
-                objId = udefault.get_objId(json_req[__defs['__adm']['id']])
+                did = udefault.get_objId(json_req[__defs['__adm']['did']])
             except:
                 abort(__defs['__res']['code'][400])
 
-            find_one_result = DaoMongo.find_one(__dets['__dsp_tabObj'], '_id', objId)
+            find_one_result = DaoMongo.find_one(__dets['__dsp_tabObj'], '_id', did)
             if find_one_result:
                 if find_one_result is 2:
                     abort(self.__res['code']['500'], message=self.__res['desc']['getone500'])
@@ -323,7 +323,7 @@ class CreHandler(Resource):
         def rebase_common_reponse(binary):
             response = make_response(binary)
             response.headers['Content-Type'] = 'image'
-            return response
+            return response, cls.__res['code'][401]
 
         verify_flag = False
         # if you change _id from gridfs one day, please fix [ len(id) ] here

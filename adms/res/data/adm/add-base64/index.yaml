@@ -3,62 +3,53 @@
   data: 
     img: "./images/1.jpg"
     text: "品友app2 is very good"
-  did: "110"
-  id: "553ef48e1d41c820042764c3"
+  did: "553ef48e1d41c820042764c3"
   type: 1
 - 
   data: 
     img: "./images/2.jpg"
     text: 下载聚美优品App立马送代金券by品友
-  did: "110"
-  id: "553ef9131d41c820042764c4"
+  did: "553ef9131d41c820042764c4"
   type: 1
 - 
   data: 
     img: "./images/3.png"
     text: "国美-天天特价,快速送达,优惠GO到家 by 品友"
-  did: "110"
-  id: "553ef9161d41c820042764c5"
+  did: "553ef9161d41c820042764c5"
   type: 1
 - 
   data: 
     img: "./images/4.jpg"
     text: 分众传媒下载聚美优品App立马送代金券
-  did: "111"
-  id: "553efb381d41c820042764c8"
+  did: "553efb381d41c820042764c8"
   type: 1
 - 
   data: 
     img: "./images/5.jpg"
     text: "分众传媒app2 is very good"
-  did: "111"
-  id: "553ef48e1d41c820042764c3"
+  did: "553ef48e1d41c820042764c3"
   type: 1
 - 
   data: 
     img: "./images/6.jpg"
     text: "分众传媒 3C数码哪家强？易迅让你Duang Duang Duang"
-  did: "111"
-  id: "553ef9131d41c820042764c4"
+  did: "553ef9131d41c820042764c4"
   type: 1
 - 
   data: 
     img: "./images/7.jpg"
     text: "亿玛 下载聚美优品App立马送代金券"
-  did: "112"
-  id: "553ef9161d41c820042764c5"
+  did: "553ef9161d41c820042764c5"
   type: 1
 - 
   data: 
     img: "./images/7.jpg"
     text: " 亿玛 花猫美食,最好的选择"
-  did: "112"
-  id: "553efb381d41c820042764c8"
+  did: "553efb381d41c820042764c8"
   type: 1
 - 
   data: 
     img: "./images/10.jpg"
     text: "亿玛 下载聚美优品App立马送代金券"
-  did: "112"
-  id: "553ef48e1d41c820042764c3"
+  did: "553ef48e1d41c820042764c3"
   type: 1
