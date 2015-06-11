@@ -19,6 +19,7 @@ class DspHandler(Resource):
     __cfg = Config.cfg
     __param = __cfg['app']['param']
 
+    __req = __cfg['http']['req']
     __res = __cfg['http']['res']
     __token = __cfg['http']['req']['token']
 
@@ -59,6 +60,7 @@ class DspHandler(Resource):
         if result:
             return {
                        self.__fields['id']: str(result),
+                       self.__fields['access_token']: self.__req['token'],
                        self.__fields['message']: self.__res['desc']['dsp201']
                    }
         # TODO when error occured that log is too long

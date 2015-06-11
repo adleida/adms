@@ -1,0 +1,365 @@
+
+<!-- saved from url=(0032)file:///home/jovi/Downloads/html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><h1 id="adms">Adms</h1>
+<blockquote>
+<p>Assist Of Adx</p>
+</blockquote>
+<p><a href="https://pypi.python.org/pypi"><img alt="pypi" src="./readme_files/Scrapy.svg"></a>
+  <a href="https://wiki.jovibox.org/"><img alt="NPM Downloads" src="./readme_files/express.svg"></a>
+  <a href="http://wiki.jovibox.org/"><img alt="Linux Build" src="./readme_files/master.svg"></a>
+  <a href="https://ci.appveyor.com/project/dougwilson/express"><img alt="Windows Build" src="./readme_files/master(1).svg"></a>
+  <a href="https://coveralls.io/r/strongloop/express?branch=master"><img alt="Test Coverage" src="./readme_files/master(2).svg"></a> </p>
+<pre><code>http http://restful.adleida.com:8008/
+
+HTTP/1.0 200 OK
+Content-Length: 41
+Content-Type: application/json
+Date: Tue, 09 Jun 2015 09:09:44 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+"Welcome to adleida restful API service!"
+</code></pre>
+<h2 id="">特性</h2>
+<ul>
+<li>成熟的数据管理系统 妥善保存 dsp 信息</li>
+<li>使用高性能 gridfs 完整存储物料</li>
+<li>物料经由审核流程确保安全合法</li>
+<li>cdn 大范围分发 大大降低等待时延</li>
+<li>支持高并发 HTTP 请求</li>
+</ul>
+<h2 id="_1">客户端准备工作</h2>
+<pre><code>sudo apt install python
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+sudo pip install httpie
+</code></pre>
+<h2 id="_2">使用指南</h2>
+<h3 id="dsp">Dsp 相关操作</h3>
+<p><strong>1. 注册 Dsp 基本信息</strong></p>
+<ol>
+<li>
+<p>数据准备</p>
+<blockquote>
+<p>注册信息采用 json 数据格式，示例模型如下所示，<code>name</code> 为 Dsp 方的名称，<code>burl</code> 为 Dsp 方竞价的服务器地址</p>
+</blockquote>
+<pre><code>{
+    "name": "dspname",
+    "burl": "http://example.dsp.com/path/to/bid/"
+}
+</code></pre>
+</li>
+<li>
+<p>调用 <code>RESTful-API</code> 进行注册 （假设现在你已经完成一份 <code>json</code> 格式的 <code>Dsp</code> 数据信息，这里暂时命名为 <code>Dsp-info.json</code>）</p>
+<pre><code>http POST http://restful.adleida.com:8008/v1/dsp/ &lt; dsp-info.json
+</code></pre>
+</li>
+<li>
+<p>确认并保留返回信息</p>
+<blockquote>
+<p>您将会接收到如同下列形式的返回信息。其中 <code>id</code> 是在我方服务端自行生成的唯一标识，<code>access_token</code> 作为以后对该注册信息操作的凭据，请自行妥善保存</p>
+</blockquote>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 103
+Content-Type: application/json
+Date: Tue, 09 Jun 2015 10:44:01 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "id": "5576c371c44b1a5756805130",
+    "access_token": "d19a1398-ccf5-4c47-868c-a4abaf24e011",
+    "message": "successfully create your dsp information to adexchange"
+}
+</code></pre>
+</li>
+</ol>
+<p><strong>2. 查询 Dsp 信息</strong></p>
+<ol>
+<li>
+<p>通过返还的 id 查询信息</p>
+<pre><code>http GET http://restful.adleida.com:8008/v1/dsp/&lt;id&gt;
+</code></pre>
+</li>
+</ol>
+<blockquote>
+<p>其中 <code>&lt;id&gt;</code> 为注册返回的 id 值 下面的例子直接使用了上述返回的 id 结果</p>
+</blockquote>
+<pre><code>  http GET http://restful.adleida.com:8008/v1/dsp/5576c371c44b1a5756805130
+</code></pre>
+<ol>
+<li>
+<p>你会接受到如同下列形式的返回信息</p>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 98
+Content-Type: application/json
+Date: Tue, 09 Jun 2015 10:52:58 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "burl": "http://example.dsp.com/path/to/bid/", 
+    "id": "5576c371c44b1a5756805130", 
+    "name": "dspname"
+}
+</code></pre>
+</li>
+</ol>
+<p><strong>3. 修改已注册的 Dsp 信息</strong></p>
+<ol>
+<li>
+<p>发送请求参数，提交 <code>PUT</code> 请求</p>
+<blockquote>
+<p>修改只需要将你想改变的字段作为参数交给请求一并发送至服务器即可，这里依然使用上述返回的 <code>id</code> 作为演示，请注意修改操作是需要提供 <code>access_token</code> 作为凭据的。下方示例修改了 <code>name</code> 字段的值</p>
+</blockquote>
+<pre><code>http PUT http://restful.adleida.com:8008/v1/dsp/ access_token:d19a1398-ccf5-4c47-868c-a4abaf24e011 id=5576c371c44b1a5756805130 name=newdspname
+</code></pre>
+</li>
+<li>
+<p>返回提示</p>
+<blockquote>
+<p>修改操作成功后返回提示信息如下所示</p>
+</blockquote>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 38
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 02:45:32 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+"successfully update your information"
+</code></pre>
+</li>
+<li>
+<p>查询确认</p>
+<blockquote>
+<p>成功更新字段后查询进行确认</p>
+</blockquote>
+<pre><code>http GET http://restful.adleida.com:8008/v1/dsp/5576c371c44b1a5756805130
+
+HTTP/1.0 200 OK
+Content-Length: 98
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 02:45:42 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "burl": "http://example.dsp.com/path/to/bid/", 
+    "id": "5576c371c44b1a5756805130", 
+    "name": "newdspname"
+}
+</code></pre>
+</li>
+</ol>
+<p><strong>4. 删除记录</strong></p>
+<ol>
+<li>
+<p>发起<code>DELETE</code>请求</p>
+<blockquote>
+<p>删除动作只需要提供 <code>id</code> 和 <code>access_token</code> 即可完成操作，如下例所示</p>
+</blockquote>
+<pre><code>http DELETE http://restful.adleida.com:8008/v1/dsp/ access_token:d19a1398-ccf5-4c47-868c-a4abaf24e011 id=5576c371c44b1a5756805130
+</code></pre>
+</li>
+<li>
+<p>确认返回结果</p>
+<blockquote>
+<p>成功删除该条记录后会接收到如下提示信息</p>
+</blockquote>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 38
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 03:32:29 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+"successfully delete your information"
+</code></pre>
+</li>
+<li>
+<p>查询验证</p>
+<blockquote>
+<p>此时便无法查询到该条记录</p>
+</blockquote>
+<pre><code>http GET http://restful.adleida.com:8008/v1/dsp/5576c371c44b1a5756805130
+
+HTTP/1.0 404 NOT FOUND
+Content-Length: 39
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 03:32:34 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "message": "Not Found", 
+    "status": 404
+}
+</code></pre>
+</li>
+</ol>
+<h3 id="adm">adm 相关操作</h3>
+<p><strong>1. 注册 adm 基本信息</strong></p>
+<ol>
+<li>执行脚本快速批量上传  <a href="https://github.com/L-Jovi/adms/blob/master/upload/uploader.py">点击此处下载上传脚本</a><blockquote>
+<p>使用该脚本非常方便，你只需要准备一份索引文件 <code>index.yaml</code> 和你所需要上传的物料置于文件夹 <code>images</code> 下即可，目录结构如下所示</p>
+</blockquote>
+<pre><code>.
+├── images
+│   ├── 1.jpg
+│   ├── 2.jpg
+│   └── 3.png
+├── index.yaml
+└── uploader.py
+</code></pre>
+</li>
+</ol>
+<blockquote>
+<p>索引文件 <code>index.yaml</code> 内容包含你所提交的 <code>adm</code> 相关信息  数据示例模型如下所示</p>
+</blockquote>
+<pre><code>    - 
+      data: 
+        img: "images/1.jpg"
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      type: 1
+    - 
+      data: 
+        img: "images/2.jpg"
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      type: 1
+    - 
+      data: 
+        img: "images/3.png"
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      type: 1
+</code></pre>
+<blockquote>
+<p>需要注意 <code>index.yaml</code> 格式的缩进是强制性的，其中 <code>did</code> 字段需要与上述示例中返回的 <code>id</code> 保持一致。
+接下来便可以直接调用 <code>uploader.py</code> 进行物料上传，简单使用如下示例</p>
+</blockquote>
+<pre><code>    usage: uploader.py [-h] [-o] [-t] [-s] [-m]
+
+    adleida simple command line uploader
+
+    optional arguments:
+      -h, --help        show this help message and exit
+      -o, --output      decide to generate result.yaml from response
+      -t, --test        test to mock local secne
+      -s, --substitute  consider whether script substitute value of field img
+</code></pre>
+<blockquote>
+<p>直接运行 <code>python</code> 命令执行该脚本，在检测本地所需上传的物料合法性之后会提示上传，执行前可以指定参数 <code>-o</code> 决定上传后将返回结果输出到本地统计目录下的文件 <code>result.yaml</code> 中，流程如下所示</p>
+</blockquote>
+<pre><code>    python uploader.py -o
+
+    start checking validation of images ..
+
+    finish checking, upload now?    [Y/n]
+
+    begin ..
+
+    finish uploading
+</code></pre>
+<blockquote>
+<p><code>result.yaml</code> 会将上传信息在服务器生成的 <code>id</code> 和取得物料的路径 <code>img</code> 显示出来</p>
+</blockquote>
+<pre><code>    - data:
+        img:                                          http://restful.adleida.com:8008/v1/media/&lt;media-id&gt;
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      id: &lt;adm-id&gt;
+      type: 1
+    - data:
+        img: http://restful.adleida.com:8008/v1/media/&lt;media-id&gt;
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      id: &lt;adm-id&gt;
+      type: 1
+    - data:
+        img: http://restful.adleida.com:8008/v1/media/&lt;media-id&gt;
+        text: "some app description"
+      did: "5576c371c44b1a5756805130"
+      id: &lt;adm-id&gt;
+      type: 1
+</code></pre>
+<blockquote>
+<p>其中 <code>&lt;adm-id&gt;</code> 为每条注册的 <code>adm</code> 信息独立的身份标识</p>
+</blockquote>
+<ol>
+<li>
+<p>web 界面上传</p>
+<ul>
+<li>TODO</li>
+</ul>
+</li>
+</ol>
+<p><strong>2. 查询 adm 信息</strong></p>
+<ol>
+<li>
+<p>发送 <code>GET</code> 请求通过返还的 <code>adm-id</code> 查询信息</p>
+<pre><code>http GET http://restful.adleida.com:8008/v1/adm/&lt;adm-id&gt;
+</code></pre>
+</li>
+<li>
+<p>确认返回信息</p>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 261
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 10:14:06 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "data": {
+        "img": "http://restful.adleida.com:8008/v1/media/&lt;media-id&gt;", 
+        "text": "some app description"
+    }, 
+    "did": "5576c371c44b1a5756805130", 
+    "id": &lt;adm-id&gt;, 
+    "type": 1
+}
+</code></pre>
+</li>
+</ol>
+<blockquote>
+<p>需要注意的是，查询出来的返回信息应该与 <code>result.yaml</code> 中对应的 <code>&lt;adm-id&gt;</code> 结果相同</p>
+</blockquote>
+<p><strong>2. 删除 adm 记录</strong></p>
+<ol>
+<li>
+<p>发送 <code>DELETE</code> 请求</p>
+<blockquote>
+<p>与删除 <code>Dsp</code> 信息操作相同，需要提供 <code>id</code>（<code>&lt;adm-id&gt;</code>） 和 <code>access_token</code> 发起删除操作请求</p>
+</blockquote>
+<pre><code>http DELETE http://restful.adleida.com:8008/v1/adm/ id=&lt;adm-id&gt; access_token:d19a1398-ccf5-4c47-868c-a4abaf24e011
+</code></pre>
+</li>
+<li>
+<p>确认返回结果</p>
+<pre><code>HTTP/1.0 200 OK
+Content-Length: 38
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 10:23:48 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+"successfully delete your information"
+</code></pre>
+</li>
+<li>
+<p>查询验证</p>
+<pre><code>http GET http://restful.adleida.com:8008/v1/adm/&lt;adm-id&gt;
+
+HTTP/1.0 404 NOT FOUND
+Content-Length: 39
+Content-Type: application/json
+Date: Wed, 10 Jun 2015 10:26:18 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+
+{
+    "message": "Not Found", 
+    "status": 404
+}
+</code></pre>
+</li>
+</ol>
+<p><strong>3. 获取物料展示</strong></p>
+<ul>
+<li>直接打开浏览器访问返回的 <code>img</code> 结果，若物料已经通过服务端审核将予以展示，否则将返回 <code>404</code></li>
+</ul>
+<h2 id="license">License</h2>
+<p><a href="file:///home/jovi/Downloads/LICENSE">MIT</a></p></body></html>

@@ -72,6 +72,7 @@ http:
       code: code
       request_data: request_data
       message: message
+      access_token: access_token
     code:
       400: 400
       401: 401

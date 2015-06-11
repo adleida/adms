@@ -323,7 +323,7 @@ class CreHandler(Resource):
         def rebase_common_reponse(binary):
             response = make_response(binary)
             response.headers['Content-Type'] = 'image'
-            return response, cls.__res['code'][401]
+            return response, cls.__res['code'][404]
 
         verify_flag = False
         # if you change _id from gridfs one day, please fix [ len(id) ] here
